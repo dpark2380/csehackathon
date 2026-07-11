@@ -27,7 +27,7 @@ export default function SettingsPanel({ settings, onSave }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-6">
+    <div className="glass rounded-card p-6 flex flex-col gap-6">
       <h3 className="uppercase tracking-wide text-sm text-gray-500">Settings</h3>
 
       <label className="flex flex-col gap-1">
@@ -61,16 +61,20 @@ export default function SettingsPanel({ settings, onSave }: Props) {
         <span className="text-xs text-gray-400 -mt-1">
           Orders made up entirely of these categories go straight through.
         </span>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-card border border-gray-200/60 px-4">
           {WHITELIST_KEYS.map((cat) => (
-            <label key={cat} className="flex items-center gap-2 text-sm text-gray-800">
+            <label
+              key={cat}
+              className="flex items-center justify-between gap-3 py-2.5 border-b border-gray-200/60 last:border-b-0 text-sm text-gray-800 cursor-pointer"
+            >
+              {WHITELIST_LABELS[cat]}
+              {/* iOS-style switch */}
               <input
                 type="checkbox"
                 checked={draft.whitelist_categories.includes(cat)}
                 onChange={() => toggleCategory(cat)}
-                className="accent-forest"
+                className="appearance-none w-11 h-6 flex-shrink-0 rounded-full bg-gray-300 checked:bg-forest relative cursor-pointer transition-colors before:content-[''] before:absolute before:top-0.5 before:left-0.5 before:w-5 before:h-5 before:rounded-full before:bg-white before:shadow before:transition-transform checked:before:translate-x-5"
               />
-              {WHITELIST_LABELS[cat]}
             </label>
           ))}
         </div>
@@ -78,7 +82,7 @@ export default function SettingsPanel({ settings, onSave }: Props) {
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-gray-700">Theme</span>
-        <div className="flex gap-2">
+        <div className="bg-gray-100 rounded-full p-1 flex w-fit">
           {(['system', 'light', 'dark'] as const).map((th) => (
             <button
               key={th}
@@ -90,10 +94,10 @@ export default function SettingsPanel({ settings, onSave }: Props) {
                 applyTheme(th);
                 onSave(next);
               }}
-              className={`text-sm px-3 py-1.5 rounded-full capitalize ${
+              className={`text-sm px-4 py-1 rounded-full capitalize transition ${
                 (draft.theme ?? 'system') === th
-                  ? 'bg-forest text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-white text-gray-900 shadow-sm font-semibold'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               {th}

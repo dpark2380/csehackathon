@@ -25,7 +25,7 @@ Rebranded "Vault" → **impulse** (lowercase i) on 2026-09-11. All user-visible 
 ## Design principles (from the team's reference screenshots, repo root)
 
 Applied across the extension UI 2026-09-11 — keep new UI consistent with these:
-1. **Limited palette, 60-30-10**: cool off-white/white base (60), near-black ink + cool grays (30), ONE interactive blue + periwinkle tint, danger red sparingly (10). No new hues in UI chrome (charts excepted: categorical color has a data job). NOTE: the Tailwind class `forest` is a legacy alias that resolves to the blue accent token; prefer `accent` in new code.
+1. **Palette: BLUE + iOS 26 "Liquid Glass"** (current — 5th iteration): dark-premium canvas by default with soft blue radial glows, `.glass` cards (translucent surface + backdrop-blur + hairline border, defined in styles.css), accent blue (light #2456C4 / dark #82AAF6, AA-validated), 22px card radius, system font stack (SF on Apple). Dashboard layout: max-w-6xl, 2-column splits on Held/detail/Spending. Light theme secondary; charts pick BROAD_COLORS_DARK vs BROAD_COLORS by resolved theme. Timer: circular ring (a sun-arc variant was tried and reverted). NOTE: the Tailwind class `forest` is a legacy alias resolving to the accent token; prefer `accent` in new code.
 2. **One font, few weights**: Inter only; semibold for headings/values, medium for buttons/labels, regular body. No font-bold.
 3. **Generous spacing**: cards p-5/p-6, list gap-4; don't cram.
 4. **Borders over shadows**: cards are bg-white + border-gray-200 hairline; hover = border-gray-300, not shadow. Only true overlays may elevate.

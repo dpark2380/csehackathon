@@ -59,6 +59,20 @@ export const BROAD_COLORS: Record<string, string> = {
   unknown: '#c3c2b7',
 };
 
+// Same eight hues re-stepped for the dark surface (validated dark chart palette),
+// not an automatic flip: dark charts need their own lightness band.
+export const BROAD_COLORS_DARK: Record<string, string> = {
+  electronics: '#3987e5',
+  clothes: '#199e70',
+  food: '#c98500',
+  beverages: '#008300',
+  medicine: '#9085e9',
+  stationery: '#e66767',
+  home: '#d55181',
+  other: '#898781',
+  unknown: '#5d6472',
+};
+
 // Order matters: medicine before food ("vitamin gummies"), beverages before food
 // ("coffee beans"), clothes before stationery ("pencil skirt").
 const BROAD_RULES: [RegExp, string][] = [

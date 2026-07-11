@@ -41,10 +41,11 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // iOS 26 look: SF on Apple hardware, graceful fallbacks elsewhere.
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        card: '14px',
+        card: '22px', // iOS 26 concentric-corner scale
       },
     },
   },

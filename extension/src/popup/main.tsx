@@ -41,34 +41,40 @@ function Popup() {
   };
 
   return (
-    <div className="w-80 bg-cream p-4 font-sans text-forest">
-      <h1 className="mb-3 text-lg font-semibold">impulse</h1>
-
-      {!loading && (
-        <div className="mb-3">
-          {userId ? (
-            <p className="text-sm">Connected as {userId.slice(0, 12)}…</p>
-          ) : (
-            <button
-              onClick={signIn}
-              disabled={signingIn}
-              className="w-full rounded-card bg-forest px-3 py-2 text-sm font-medium text-cream disabled:opacity-60"
-            >
-              {signingIn ? 'Opening…' : 'Sign in with Google'}
-            </button>
+    <div className="w-80 p-4 font-sans text-gray-900">
+      <div className="glass rounded-card p-5 flex flex-col gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-gray-900">impulse</h1>
+          {!loading && userId && (
+            <p className="mt-1 text-xs text-gray-500">Connected as {userId.slice(0, 12)}…</p>
           )}
         </div>
-      )}
 
-      <button
-        onClick={openVault}
-        className="w-full rounded-card border border-forest px-3 py-2 text-sm font-medium text-forest"
-      >
-        Open impulse
-      </button>
+        {!loading && !userId && (
+          <button
+            onClick={signIn}
+            disabled={signingIn}
+            className="w-full rounded-card bg-forest px-3 py-2.5 text-sm font-medium text-white transition hover:bg-forest/90 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {signingIn ? 'Opening…' : 'Sign in with Google'}
+          </button>
+        )}
 
-      <div className="mt-4 text-right">
-        <button onClick={resetDemo} className="text-xs text-forest/60 hover:text-forest">
+        <button
+          onClick={openVault}
+          className={`w-full rounded-card px-3 py-2.5 text-sm font-medium transition ${
+            userId
+              ? 'bg-forest text-white hover:bg-forest/90'
+              : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+          }`}
+        >
+          Open impulse
+        </button>
+
+        <button
+          onClick={resetDemo}
+          className="self-end text-xs text-gray-400 hover:text-gray-600"
+        >
           {resetMsg ? 'reset ✓' : 'Reset Demo Data'}
         </button>
       </div>

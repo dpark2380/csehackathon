@@ -43,12 +43,6 @@ export default function CountdownTimer({ interceptedAt, onExpire, holdMs }: Prop
     }
   }, [expired, onExpire]);
 
-  const R = 90;
-  const C = 2 * Math.PI * R;
-  const offset = C * (1 - fraction);
-  // Theme tokens, so the ring follows light/dark automatically.
-  const color = expired || urgent ? 'var(--color-danger)' : 'var(--color-accent)';
-
   // Expired: no ring, just a flat statement that the hold is over.
   if (expired) {
     return (
@@ -64,8 +58,13 @@ export default function CountdownTimer({ interceptedAt, onExpire, holdMs }: Prop
     );
   }
 
+  const R = 90;
+  const C = 2 * Math.PI * R;
+  const offset = C * (1 - fraction);
+  const color = urgent ? 'var(--color-danger)' : 'var(--color-accent)';
+
   return (
-    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col items-center">
+    <div className="glass rounded-card p-6 flex flex-col items-center">
       <div className="relative" style={{ width: 200, height: 200 }}>
         <svg width={200} height={200} viewBox="0 0 200 200">
           <circle
@@ -93,16 +92,10 @@ export default function CountdownTimer({ interceptedAt, onExpire, holdMs }: Prop
           </g>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {expired ? (
-            <span className="text-3xl font-semibold text-danger">Decision time</span>
-          ) : (
-            <>
-              <span className="text-4xl font-semibold tabular-nums text-gray-900">
-                {format(remaining)}
-              </span>
-              <span className="text-sm text-gray-500 mt-1">until decision time</span>
-            </>
-          )}
+          <span className="text-4xl font-semibold tabular-nums text-gray-900">
+            {format(remaining)}
+          </span>
+          <span className="text-sm text-gray-500 mt-1">until decision time</span>
         </div>
       </div>
     </div>

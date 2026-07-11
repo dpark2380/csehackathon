@@ -53,7 +53,7 @@ function Skeleton() {
 
 export default function OwnedItemsPanel({ matches, loading, bare }: Props) {
   return (
-    <div className={bare ? '' : 'bg-white rounded-card border border-gray-200 p-5'}>
+    <div className={bare ? '' : 'glass rounded-card p-5'}>
       {!bare && (
         <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">You Already Own</h3>
       )}

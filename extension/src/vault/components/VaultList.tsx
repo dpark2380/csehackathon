@@ -24,13 +24,13 @@ function miniLabel(
 
 function Thumb({ src, alt }: { src: string; alt: string }) {
   const [err, setErr] = useState(false);
-  if (err) return <div className="w-20 h-20 rounded-card bg-gray-200 flex-shrink-0" />;
+  if (err) return <div className="w-14 h-14 rounded-xl bg-gray-200 flex-shrink-0" />;
   return (
     <img
       src={src}
       alt={alt}
       onError={() => setErr(true)}
-      className="w-20 h-20 rounded-card object-cover flex-shrink-0"
+      className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
     />
   );
 }
@@ -45,7 +45,7 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
 
   if (pending.length === 0) {
     return (
-      <div className="bg-white rounded-card border border-gray-200 p-8 text-center">
+      <div className="glass rounded-card p-8 text-center">
         <p className="text-lg text-gray-500">Nothing held right now. Go live your life.</p>
       </div>
     );
@@ -56,64 +56,71 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
   const needsDecision = sorted.filter((i) => now >= i.intercepted_at + hold);
   const onHold = sorted.filter((i) => now < i.intercepted_at + hold);
 
-  const renderCard = (interception: Interception) => {
-        const { item } = interception;
-        const mini = miniLabel(interception.intercepted_at, now, holdMs ?? DAY_MS);
-        return (
-          <button
-            key={interception.id}
-            type="button"
-            onClick={() => onOpen(interception.id)}
-            className="w-full text-left bg-white rounded-card border border-gray-200 p-5 flex gap-4 items-center transition hover:border-gray-300 hover:-translate-y-0.5"
+  // iOS grouped-inset row: hairline separators inside one glass group, chevron affordance.
+  const renderRow = (interception: Interception) => {
+    const { item } = interception;
+    const mini = miniLabel(interception.intercepted_at, now, hold);
+    const total = (interception.items ?? [item]).reduce(
+      (sum, i) => sum + i.price * (i.quantity ?? 1),
+      0
+    );
+    return (
+      <button
+        key={interception.id}
+        type="button"
+        onClick={() => onOpen(interception.id)}
+        className="w-full text-left px-5 py-4 flex gap-4 items-center border-b border-gray-200/60 last:border-b-0 transition hover:bg-gray-50/50 active:bg-gray-100/50"
+      >
+        <Thumb src={item.image_url} alt={item.title} />
+        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+          <p className="truncate text-base font-semibold text-gray-900">
+            {item.title}
+            {(item.quantity ?? 1) > 1 && (
+              <span className="ml-1 text-sm font-normal text-gray-500">×{item.quantity}</span>
+            )}
+          </p>
+          <p className="text-sm text-gray-500 capitalize">
+            {item.retailer}
+            {(interception.items?.length ?? 1) > 1 && ` · ${interception.items!.length} items`}
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-base font-semibold text-forest">${total.toFixed(2)}</span>
+          <span
+            className={`text-xs font-medium whitespace-nowrap ${
+              mini.expired ? 'text-danger' : 'text-gray-500'
+            }`}
           >
-            <Thumb src={item.image_url} alt={item.title} />
-            <div className="min-w-0 flex-1 flex flex-col gap-1">
-              <span className="inline-block w-fit px-2 py-0.5 rounded-full bg-gray-100 text-xs capitalize text-gray-600">
-                {item.retailer}
-              </span>
-              <p className="truncate text-lg font-medium text-gray-900">
-                {item.title}
-                {(item.quantity ?? 1) > 1 && (
-                  <span className="ml-1 text-sm text-gray-500">×{item.quantity}</span>
-                )}
-              </p>
-              <p className="text-xl font-semibold text-forest">
-                $
-                {(interception.items ?? [item])
-                  .reduce((sum, i) => sum + i.price * (i.quantity ?? 1), 0)
-                  .toFixed(2)}
-                {(interception.items?.length ?? 1) > 1 && (
-                  <span className="ml-2 text-sm font-medium text-gray-500">
-                    · {interception.items!.length} items
-                  </span>
-                )}
-              </p>
-            </div>
-            <span
-              className={`text-sm font-medium whitespace-nowrap ${
-                mini.expired ? 'text-danger' : 'text-gray-500'
-              }`}
-            >
-              {mini.text}
-            </span>
-          </button>
+            {mini.text}
+          </span>
+        </div>
+        <span className="text-xl text-gray-400" aria-hidden>
+          ›
+        </span>
+      </button>
     );
   };
+
+  const group = (rows: Interception[]) => (
+    <div className="glass rounded-card overflow-hidden">{rows.map(renderRow)}</div>
+  );
 
   return (
     <div className="flex flex-col gap-6">
       {needsDecision.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h3 className="uppercase tracking-wide text-sm text-danger font-medium">
+        <div className="flex flex-col gap-2">
+          <h3 className="uppercase tracking-wide text-xs text-danger font-semibold px-5">
             Needs your decision
           </h3>
-          {needsDecision.map(renderCard)}
+          {group(needsDecision)}
         </div>
       )}
       {onHold.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <h3 className="uppercase tracking-wide text-sm text-gray-500">On hold</h3>
-          {onHold.map(renderCard)}
+        <div className="flex flex-col gap-2">
+          <h3 className="uppercase tracking-wide text-xs text-gray-500 font-semibold px-5">
+            On hold
+          </h3>
+          {group(onHold)}
         </div>
       )}
     </div>

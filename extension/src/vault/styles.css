@@ -13,4 +13,104 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
+
+  /* The field the glass refracts: soft accent glows drifting behind the page (iOS 26 vibe).
+     Four small, independent glows loop around the viewport on their own paths/speeds
+     so the motion reads clearly rather than as one slow wash. Each is oversized-blurred
+     and sits at z-index -1, above body's bg color but under #root, so .glass backdrop-blur
+     still refracts them. */
+  body {
+    min-height: 100vh;
+  }
+
+  .glow {
+    position: fixed;
+    z-index: -1;
+    pointer-events: none;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    filter: blur(60px);
+    background: rgb(var(--c-accent) / 0.34);
+  }
+
+  .glow-1 {
+    top: -6%;
+    left: -4%;
+    animation: glow-path-1 26s ease-in-out infinite;
+  }
+
+  .glow-2 {
+    top: 55%;
+    left: 70%;
+    width: 300px;
+    height: 300px;
+    background: rgb(var(--c-accent) / 0.3);
+    animation: glow-path-2 32s ease-in-out infinite;
+  }
+
+  .glow-3 {
+    top: 20%;
+    left: 45%;
+    width: 260px;
+    height: 260px;
+    background: rgb(var(--c-accent) / 0.26);
+    animation: glow-path-3 22s ease-in-out infinite;
+  }
+
+  .glow-4 {
+    top: 75%;
+    left: 10%;
+    width: 320px;
+    height: 320px;
+    background: rgb(var(--c-accent) / 0.3);
+    animation: glow-path-4 29s ease-in-out infinite;
+  }
+
+  @keyframes glow-path-1 {
+    0%   { transform: translate3d(0%, 0%, 0) scale(1); }
+    25%  { transform: translate3d(28vw, 10vh, 0) scale(1.1); }
+    50%  { transform: translate3d(18vw, 28vh, 0) scale(0.95); }
+    75%  { transform: translate3d(6vw, 14vh, 0) scale(1.05); }
+    100% { transform: translate3d(0%, 0%, 0) scale(1); }
+  }
+
+  @keyframes glow-path-2 {
+    0%   { transform: translate3d(0%, 0%, 0) scale(1); }
+    30%  { transform: translate3d(-26vw, -12vh, 0) scale(1.08); }
+    60%  { transform: translate3d(-12vw, 7vh, 0) scale(0.92); }
+    100% { transform: translate3d(0%, 0%, 0) scale(1); }
+  }
+
+  @keyframes glow-path-3 {
+    0%   { transform: translate3d(0%, 0%, 0) scale(1); }
+    20%  { transform: translate3d(-16vw, 18vh, 0) scale(0.9); }
+    55%  { transform: translate3d(10vw, 26vh, 0) scale(1.12); }
+    80%  { transform: translate3d(16vw, 2vh, 0) scale(1); }
+    100% { transform: translate3d(0%, 0%, 0) scale(1); }
+  }
+
+  @keyframes glow-path-4 {
+    0%   { transform: translate3d(0%, 0%, 0) scale(1); }
+    35%  { transform: translate3d(21vw, -21vh, 0) scale(1.08); }
+    65%  { transform: translate3d(28vw, -5vh, 0) scale(0.95); }
+    100% { transform: translate3d(0%, 0%, 0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow {
+      animation: none;
+    }
+  }
+}
+
+@layer utilities {
+  /* Liquid-glass card: translucent surface, backdrop blur, hairline border, soft lift. */
+  .glass {
+    background-color: rgb(var(--c-bg-surface) / 0.62);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    backdrop-filter: blur(22px) saturate(1.5);
+    border: 1px solid rgb(var(--c-neutral-200) / 0.55);
+    box-shadow: 0 10px 34px rgb(0 0 0 / 0.1);
+  }
 }

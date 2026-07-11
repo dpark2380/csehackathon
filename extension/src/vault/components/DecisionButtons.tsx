@@ -34,7 +34,7 @@ export default function DecisionButtons({ expired, onDecide, busy }: Props) {
           type="button"
           disabled={buyDisabled}
           onClick={() => onDecide('buy', unlockedReason)}
-          className="w-full border border-gray-300 text-gray-700 text-base font-medium py-3 rounded-card transition hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="w-full bg-gray-100 text-danger text-base font-semibold py-3 rounded-card transition hover:bg-gray-200 disabled:opacity-40 disabled:text-gray-500 disabled:cursor-not-allowed"
         >
           Buy Anyway
         </button>
@@ -55,7 +55,7 @@ export default function DecisionButtons({ expired, onDecide, busy }: Props) {
       )}
 
       {!unlocked && showForm && (
-        <div className="bg-white rounded-card border border-gray-200 p-5 flex flex-col gap-3">
+        <div className="glass rounded-card p-5 flex flex-col gap-3">
           <p className="text-sm text-gray-700 font-medium">
             Before we unlock this: write down who this is for and why it truly can&apos;t wait 24
             hours. Your future self will read this.

@@ -43,7 +43,7 @@ function Section({
   return (
     <details
       open={defaultOpen}
-      className="group bg-white rounded-card border border-gray-200 open:pb-5"
+      className="group glass rounded-card open:pb-5"
     >
       <summary className="flex items-center justify-between cursor-pointer select-none list-none px-5 py-4">
         <span className="uppercase tracking-wide text-sm text-gray-500">
@@ -202,7 +202,7 @@ export default function App() {
 
   if (!ready || !vault) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg text-gray-500">Loading impulse…</p>
       </div>
     );
@@ -221,8 +221,8 @@ export default function App() {
     .reduce((sum, h) => sum + h.item.price, 0);
 
   return (
-    <div className="min-h-screen bg-cream font-sans text-gray-900">
-      <div className="max-w-2xl mx-auto p-6 flex flex-col gap-6">
+    <div className="min-h-screen font-sans text-gray-900">
+      <div className="max-w-6xl mx-auto px-8 py-8 flex flex-col gap-6">
         {inDetail && selected ? (
           <>
             <button
@@ -232,8 +232,11 @@ export default function App() {
             >
               ← Back to impulse
             </button>
+            <div className="grid lg:grid-cols-5 gap-6 items-start">
+              {/* Action rail: what you're buying + the clock + the decision. */}
+              <div className="lg:col-span-2 flex flex-col gap-6 lg:sticky lg:top-8">
             {(selected.items?.length ?? 1) > 1 ? (
-              <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-2">
+              <div className="glass rounded-card p-6 flex flex-col gap-2">
                 <span className="inline-block w-fit px-2 py-0.5 rounded-full bg-gray-100 text-xs capitalize text-gray-600">
                   {selected.item.retailer}
                 </span>
@@ -252,7 +255,7 @@ export default function App() {
               <InterceptedItemCard item={selected.item} />
             )}
             {(selected.items?.length ?? 0) > 1 && (
-              <div className="bg-white rounded-card border border-gray-200 p-5">
+              <div className="glass rounded-card p-5">
                 <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-3">
                   In this order
                 </h3>
@@ -287,6 +290,9 @@ export default function App() {
               onExpire={() => setExpired(true)}
             />
             <DecisionButtons expired={expired} onDecide={handleDecide} busy={busy} />
+              </div>
+              {/* Evidence column: everything that argues against the purchase. */}
+              <div className="lg:col-span-3 flex flex-col gap-6">
             <Section title="You already own" badge={matchesQ.data?.matches.length} defaultOpen>
               <OwnedItemsPanel
                 bare
@@ -297,82 +303,87 @@ export default function App() {
             <Section
               title="Same item, secondhand"
               badge={(secondhandQ.data ?? []).reduce((n, g) => n + g.listings.length, 0)}
+              defaultOpen
             >
               <SecondhandPanel bare groups={secondhandQ.data ?? []} loading={secondhandQ.isLoading} />
             </Section>
-            <Section title="True cost">
+            <Section title="True cost" defaultOpen>
               <TrueCostPanel bare trueCost={trueCostQ.data} loading={trueCostQ.isLoading} />
             </Section>
+              </div>
+            </div>
           </>
         ) : (
           <>
-            <header className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-semibold text-gray-900">impulse</h1>
-                <div className="flex gap-1">
-                  {(
-                    [
-                      ['vault', 'Held'],
-                      ['tracker', 'Spending'],
-                      ['settings', 'Settings'],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setTab(key)}
-                      className={`text-sm px-3 py-1.5 rounded-full ${
-                        tab === key
-                          ? 'bg-forest text-white'
-                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+            <header className="flex items-center justify-between gap-6">
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900">impulse</h1>
+              {/* iOS segmented control */}
+              <div className="glass rounded-full p-1 flex">
+                {(
+                  [
+                    ['vault', 'Held'],
+                    ['tracker', 'Spending'],
+                    ['settings', 'Settings'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setTab(key)}
+                    className={`text-sm font-semibold px-6 py-1.5 rounded-full transition ${
+                      tab === key
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              {tab === 'vault' && (
-                <>
-                  <div className="grid grid-cols-3 gap-4">
-                    {(
-                      [
-                        ['Saved', `$${tally.dollars_saved}`],
-                        ['CO₂ avoided', `${tally.kg_co2_avoided} kg`],
-                        ['Released', `${tally.items_released} items`],
-                      ] as const
-                    ).map(([label, value]) => (
-                      <div key={label} className="bg-white rounded-card border border-gray-200 p-4">
-                        <p className="text-xs text-gray-500 mb-1">{label}</p>
-                        <p className="text-2xl font-semibold text-gray-900">{value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {monthSpentAnyway > 0 && (
-                    <div className="bg-tint rounded-card px-4 py-3 flex items-center justify-between">
-                      <span className="text-sm text-tint-fg">
-                        ${monthSpentAnyway.toFixed(2)} bought anyway this month
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setTab('tracker')}
-                        className="text-sm font-medium text-white bg-accent rounded-lg px-3 py-1.5 hover:bg-accent/90"
-                      >
-                        Review
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
             </header>
             {tab === 'vault' && (
               <>
-                <VaultList
-                  pending={vault.pending_interceptions}
-                  onOpen={goDetail}
-                  holdMs={holdMs}
-                />
-                <HistoryFeed history={vault.history} />
+                <div className="grid grid-cols-3 gap-6">
+                  {(
+                    [
+                      ['Saved', `$${tally.dollars_saved}`],
+                      ['CO₂ avoided', `${tally.kg_co2_avoided} kg`],
+                      ['Released', `${tally.items_released} items`],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label} className="glass rounded-card p-5">
+                      <p className="text-xs text-gray-500 mb-1">{label}</p>
+                      <p className="text-3xl font-semibold text-gray-900">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                {/* Dashboard split: held items main, money story side. */}
+                <div className="grid lg:grid-cols-3 gap-6 items-start">
+                  <div className="lg:col-span-2">
+                    <VaultList
+                      pending={vault.pending_interceptions}
+                      onOpen={goDetail}
+                      holdMs={holdMs}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-6">
+                    {monthSpentAnyway > 0 && (
+                      <div className="bg-tint rounded-card px-4 py-3 flex items-center justify-between">
+                        <span className="text-sm text-tint-fg">
+                          ${monthSpentAnyway.toFixed(2)} bought anyway this month
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setTab('tracker')}
+                          className="text-sm font-medium text-white bg-accent rounded-lg px-3 py-1.5 hover:bg-accent/90"
+                        >
+                          Review
+                        </button>
+                      </div>
+                    )}
+                    <HistoryFeed history={vault.history} />
+                  </div>
+                </div>
               </>
             )}
             {tab === 'tracker' && <SpendingTracker history={vault.history} />}

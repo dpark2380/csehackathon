@@ -29,7 +29,7 @@ export default function TrueCostPanel({ trueCost, loading, bare }: Props) {
   if (!trueCost && !loading) return null;
 
   return (
-    <div className={bare ? '' : 'bg-white rounded-card border border-gray-200 p-5'}>
+    <div className={bare ? '' : 'glass rounded-card p-5'}>
       {!bare && <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">True Cost</h3>}
       <div className="grid grid-cols-3 gap-4">
         {loading || !trueCost ? (

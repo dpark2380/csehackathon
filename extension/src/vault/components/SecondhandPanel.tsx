@@ -65,7 +65,7 @@ function SkeletonRow() {
 export default function SecondhandPanel({ groups, loading, bare }: Props) {
   const nonEmpty = groups.filter((g) => g.listings.length > 0);
   return (
-    <div className={bare ? '' : 'bg-white rounded-card border border-gray-200 p-5'}>
+    <div className={bare ? '' : 'glass rounded-card p-5'}>
       {!bare && (
         <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-1">
           Same Item, Secondhand

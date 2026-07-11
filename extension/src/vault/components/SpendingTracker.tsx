@@ -1,6 +1,29 @@
-import { useState } from 'react';
-import { BROAD_COLORS, BROAD_LABELS, broadCategorize } from '../../shared/categories';
+import { useEffect, useState } from 'react';
+import {
+  BROAD_COLORS,
+  BROAD_COLORS_DARK,
+  BROAD_LABELS,
+  broadCategorize,
+} from '../../shared/categories';
 import type { Interception } from '../../shared/types';
+
+/** True when the resolved theme is dark (explicit attr or system), reactive to changes. */
+function useIsDarkTheme(): boolean {
+  const resolve = () =>
+    getComputedStyle(document.documentElement).getPropertyValue('color-scheme').includes('dark');
+  const [isDark, setIsDark] = useState(resolve);
+  useEffect(() => {
+    const update = () => setIsDark(resolve());
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    mq.addEventListener('change', update);
+    window.addEventListener('vault-themechange', update);
+    return () => {
+      mq.removeEventListener('change', update);
+      window.removeEventListener('vault-themechange', update);
+    };
+  }, []);
+  return isDark;
+}
 
 type Period = 'week' | 'month' | 'year';
 const PERIOD_MS: Record<Period, number> = {
@@ -134,6 +157,8 @@ function slicePath(cx: number, cy: number, rO: number, rI: number, a0: number, a
 export default function SpendingTracker({ history }: Props) {
   const [period, setPeriod] = useState<Period>('month');
   const [hovered, setHovered] = useState<string | null>(null);
+  const isDark = useIsDarkTheme();
+  const palette = isDark ? BROAD_COLORS_DARK : BROAD_COLORS;
   const { rows, totalSpent, totalCount, kinds, purchases } = computeRows(history, period);
 
   const hoveredRow = rows.find((r) => r.category === hovered) ?? null;
@@ -146,7 +171,8 @@ export default function SpendingTracker({ history }: Props) {
   });
 
   return (
-    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-5">
+    <div className="grid lg:grid-cols-2 gap-6 items-start">
+      <div className="glass rounded-card p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="uppercase tracking-wide text-sm text-gray-500">Money spent anyway</h3>
         <div className="flex gap-1">
@@ -177,7 +203,7 @@ export default function SpendingTracker({ history }: Props) {
                 <path
                   key={s.category}
                   d={slicePath(105, 105, 100, 70, s.a0, s.a1)}
-                  fill={BROAD_COLORS[s.category] ?? BROAD_COLORS.other}
+                  fill={palette[s.category] ?? palette.other}
                   stroke="var(--color-bg-surface)"
                   strokeWidth={2}
                   opacity={hovered === null || hovered === s.category ? 1 : 0.35}
@@ -191,7 +217,8 @@ export default function SpendingTracker({ history }: Props) {
               ))}
             </svg>
             {/* Centre readout: total by default, hovered slice on hover. */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+            {/* Keep the readout inside the donut hole (inner r=70 -> ~140px usable). */}
+            <div className="absolute inset-0 px-12 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredRow ? (
                 <>
                   <span className="text-sm text-gray-500">{BROAD_LABELS[hoveredRow.category]}</span>
@@ -207,8 +234,11 @@ export default function SpendingTracker({ history }: Props) {
                   <span className="text-3xl font-semibold text-gray-900">
                     ${totalSpent.toFixed(totalSpent >= 1000 ? 0 : 2)}
                   </span>
-                  <span className="text-sm text-gray-500">
-                    {totalCount} item{totalCount === 1 ? '' : 's'} · {PERIOD_LABELS[period]}
+                  <span className="text-xs text-gray-500 leading-tight">
+                    {totalCount} item{totalCount === 1 ? '' : 's'}
+                  </span>
+                  <span className="text-xs text-gray-500 leading-tight">
+                    {PERIOD_LABELS[period]}
                   </span>
                 </>
               )}
@@ -228,7 +258,7 @@ export default function SpendingTracker({ history }: Props) {
               >
                 <span
                   className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-                  style={{ background: BROAD_COLORS[row.category] ?? BROAD_COLORS.other }}
+                  style={{ background: palette[row.category] ?? palette.other }}
                 />
                 <span className="text-base text-gray-800 flex-1">
                   {BROAD_LABELS[row.category] ?? row.category}
@@ -244,8 +274,11 @@ export default function SpendingTracker({ history }: Props) {
         </div>
       )}
 
+      </div>
+
       {purchases.length > 0 && (
-        <div className="border-t border-gray-100 pt-4">
+        <div className="glass rounded-card p-6 flex flex-col gap-4">
+        <div>
           <h4 className="uppercase tracking-wide text-xs text-gray-500 mb-2">
             Everything you bought
           </h4>
@@ -256,7 +289,7 @@ export default function SpendingTracker({ history }: Props) {
             >
               <span
                 className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-                style={{ background: BROAD_COLORS[p.category] ?? BROAD_COLORS.other }}
+                style={{ background: palette[p.category] ?? palette.other }}
                 title={BROAD_LABELS[p.category] ?? p.category}
               />
               <p className="truncate flex-1 text-sm text-gray-800">{p.title}</p>
@@ -271,9 +304,8 @@ export default function SpendingTracker({ history }: Props) {
             </div>
           ))}
         </div>
-      )}
 
-      {kinds.length > 0 && (
+        {kinds.length > 0 && (
         <div className="border-t border-gray-100 pt-4">
           <h4 className="uppercase tracking-wide text-xs text-gray-500 mb-2">How it was bought</h4>
           {kinds.map((k) => (
@@ -288,6 +320,8 @@ export default function SpendingTracker({ history }: Props) {
               </span>
             </div>
           ))}
+        </div>
+        )}
         </div>
       )}
     </div>

@@ -54,16 +54,16 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --c-bg-page: 15 17 21;
-  --c-bg-surface: 25 28 34;
+  --c-bg-page: 11 12 16;
+  --c-bg-surface: 21 23 29;
 
-  --c-text-primary: 240 242 245;
-  --c-text-secondary: 194 199 209;
-  --c-text-muted: 147 154 167;
+  --c-text-primary: 242 243 246;
+  --c-text-secondary: 196 201 212;
+  --c-text-muted: 149 156 172;
 
   --c-accent: 130 170 246;
   --c-accent-fg: 12 29 64;
-  --c-tint: 35 43 63;
+  --c-tint: 31 39 64;
   --c-tint-fg: 185 200 244;
   --c-danger: 227 128 128;
   --c-danger-fg: 42 15 15;
@@ -87,16 +87,16 @@
   :root:not([data-theme]) {
     color-scheme: dark;
 
-    --c-bg-page: 15 17 21;
-    --c-bg-surface: 25 28 34;
+    --c-bg-page: 11 12 16;
+    --c-bg-surface: 21 23 29;
 
-    --c-text-primary: 240 242 245;
-    --c-text-secondary: 194 199 209;
-    --c-text-muted: 147 154 167;
+    --c-text-primary: 242 243 246;
+    --c-text-secondary: 196 201 212;
+    --c-text-muted: 149 156 172;
 
     --c-accent: 130 170 246;
     --c-accent-fg: 12 29 64;
-    --c-tint: 35 43 63;
+    --c-tint: 31 39 64;
     --c-tint-fg: 185 200 244;
     --c-danger: 227 128 128;
     --c-danger-fg: 42 15 15;

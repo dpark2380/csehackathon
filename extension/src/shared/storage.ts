@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: VaultSettings = {
   hold_hours: 24,
   whitelist_categories: [],
   min_price: 0,
-  theme: 'system',
+  theme: 'dark', // dark premium is the brand default; light/system remain user options
 };
 
 /**
@@ -29,6 +29,8 @@ export function applyTheme(theme: VaultSettings['theme']): void {
   } else {
     delete document.documentElement.dataset.theme;
   }
+  // Lets theme-aware JS (chart palettes) react without polling.
+  window.dispatchEvent(new Event('vault-themechange'));
 }
 
 function round2(n: number): number {

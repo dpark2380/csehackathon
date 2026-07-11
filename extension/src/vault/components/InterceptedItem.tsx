@@ -14,15 +14,15 @@ export default function InterceptedItemCard({ item, total, itemCount }: Props) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="bg-white rounded-card border border-gray-200 p-6 flex gap-5 items-center">
+    <div className="glass rounded-card p-6 flex gap-5 items-center">
       {imgError ? (
-        <div className="w-40 h-40 rounded-card bg-gray-200 flex-shrink-0" />
+        <div className="w-48 h-48 rounded-card bg-gray-200 flex-shrink-0" />
       ) : (
         <img
           src={item.image_url}
           alt={item.title}
           onError={() => setImgError(true)}
-          className="w-40 h-40 rounded-card object-cover flex-shrink-0"
+          className="w-48 h-48 rounded-card object-cover flex-shrink-0"
         />
       )}
       <div className="flex flex-col gap-2 min-w-0">
