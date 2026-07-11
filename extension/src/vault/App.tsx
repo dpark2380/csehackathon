@@ -1,0 +1,326 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import type { Decision, Tally, VaultStorage } from '../shared/types';
+import type { VaultSettings } from '../shared/types';
+import {
+  captureUserIdFromUrl,
+  decideInterception,
+  ensureSeeded,
+  getVault,
+  grantBuyPass,
+  saveSettings,
+} from '../shared/storage';
+import SettingsPanel from './components/SettingsPanel';
+import SpendingTracker from './components/SpendingTracker';
+import { api } from './api/client';
+import InterceptedItemCard from './components/InterceptedItem';
+import OwnedItemsPanel from './components/OwnedItemsPanel';
+import SecondhandPanel from './components/SecondhandPanel';
+import TrueCostPanel from './components/TrueCostPanel';
+import HistoryFeed from './components/HistoryFeed';
+import CountdownTimer from './components/CountdownTimer';
+import DecisionButtons from './components/DecisionButtons';
+import ConfettiOverlay from './components/ConfettiOverlay';
+import VaultList from './components/VaultList';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const EMPTY_TALLY: Tally = { dollars_saved: 0, kg_co2_avoided: 0, items_released: 0 };
+
+function setIdParam(id: string | null): void {
+  const url = new URL(window.location.href);
+  if (id) url.searchParams.set('id', id);
+  else url.searchParams.delete('id');
+  history.replaceState(null, '', url.toString());
+}
+
+export default function App() {
+  const [vault, setVault] = useState<VaultStorage | null>(null);
+  const [ready, setReady] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [tab, setTab] = useState<'vault' | 'tracker' | 'settings'>('vault');
+  const [busy, setBusy] = useState(false);
+  const [expired, setExpired] = useState(false);
+  const [confetti, setConfetti] = useState<{ before: Tally; after: Tally } | null>(null);
+
+  const reload = useCallback(async () => {
+    setVault(await getVault());
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await captureUserIdFromUrl();
+      await ensureSeeded();
+      await reload();
+      setSelectedId(new URL(window.location.href).searchParams.get('id'));
+      setReady(true);
+    })();
+  }, [reload]);
+
+  const selected =
+    vault && selectedId
+      ? vault.pending_interceptions.find((p) => p.id === selectedId) ?? null
+      : null;
+  const inDetail = selected !== null;
+  const item = selected?.item;
+  const userId = vault?.user_id;
+  const hourlyRate = vault?.settings.hourly_rate ?? 30;
+  const holdMs = (vault?.settings.hold_hours ?? 24) * 60 * 60 * 1000;
+
+  // If a selected id no longer matches anything pending, fall back to list view.
+  useEffect(() => {
+    if (ready && vault && selectedId && !selected && !confetti) {
+      setIdParam(null);
+      setSelectedId(null);
+    }
+  }, [ready, vault, selectedId, selected, confetti]);
+
+  // Reset the expired flag whenever we enter a new detail view.
+  useEffect(() => {
+    if (selected) setExpired(selected.intercepted_at + holdMs <= Date.now());
+  }, [selectedId, selected, holdMs]);
+
+  const enabled = inDetail && !!item;
+  const category =
+    item?.category ?? (item?.retailer === 'shein' ? 'fast_fashion_top' : 'electronics_small');
+
+  const matchesQ = useQuery({
+    queryKey: ['matches', selectedId],
+    enabled: enabled && !!userId,
+    queryFn: () => api.getMatches(userId!, item!),
+  });
+  const secondhandQ = useQuery({
+    queryKey: ['secondhand', selectedId],
+    enabled,
+    queryFn: () => api.getSecondhand(item!.title),
+  });
+  const trueCostQ = useQuery({
+    queryKey: ['trueCost', selectedId],
+    enabled,
+    queryFn: () => api.getTrueCost(item!.price, category, hourlyRate),
+  });
+
+  const goDetail = useCallback((id: string) => {
+    setIdParam(id);
+    setSelectedId(id);
+  }, []);
+
+  const goList = useCallback(() => {
+    setIdParam(null);
+    setSelectedId(null);
+  }, []);
+
+  const handleDecide = useCallback(
+    async (decision: Decision, bypassReason?: string) => {
+      if (!selected || !vault || busy) return;
+      setBusy(true);
+      const decidedItem = selected.item;
+      // Cart value = sum of per-item price × quantity across all line items.
+      const cartDollars = (selected.items ?? [decidedItem]).reduce(
+        (sum, i) => sum + i.price * (i.quantity ?? 1),
+        0
+      );
+      const savings = {
+        dollars: Math.round(cartDollars * 100) / 100,
+        kg_co2: trueCostQ.data?.kg_co2 ?? 0,
+      };
+      const before = vault.tally;
+      const after = await decideInterception(selected.id, decision, savings, bypassReason);
+
+      // Pause interception for this retailer so the sanctioned purchase can complete,
+      // and take the user straight back to where they left off (team-approved spec override).
+      if (decision === 'buy') {
+        await grantBuyPass(decidedItem.retailer);
+        if (decidedItem.checkout_url) chrome.tabs.create({ url: decidedItem.checkout_url });
+      }
+
+      if (userId) api.logDecision(userId, decidedItem, decision, savings).catch(() => {});
+
+      if (decision === 'release') {
+        setConfetti({ before, after });
+        setTimeout(async () => {
+          await reload();
+          setConfetti(null);
+          setBusy(false);
+          goList();
+        }, 2500);
+      } else {
+        await reload();
+        setBusy(false);
+        goList();
+      }
+    },
+    [selected, vault, busy, userId, trueCostQ.data, reload, goList]
+  );
+
+  if (!ready || !vault) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <p className="text-lg text-gray-500">Loading your Vault…</p>
+      </div>
+    );
+  }
+
+  const tally = vault.tally;
+  const thisMonth = new Date();
+  const monthSpentAnyway = vault.history
+    .filter((h) => {
+      if (h.decision !== 'buy' || h.decided_at === undefined) return false;
+      const d = new Date(h.decided_at);
+      return (
+        d.getMonth() === thisMonth.getMonth() && d.getFullYear() === thisMonth.getFullYear()
+      );
+    })
+    .reduce((sum, h) => sum + h.item.price, 0);
+
+  return (
+    <div className="min-h-screen bg-cream font-sans text-gray-900">
+      <div className="max-w-2xl mx-auto p-6 flex flex-col gap-6">
+        {inDetail && selected ? (
+          <>
+            <button
+              type="button"
+              onClick={goList}
+              className="self-start text-sm text-forest font-medium hover:underline"
+            >
+              ← Back to Vault
+            </button>
+            {(selected.items?.length ?? 1) > 1 ? (
+              <div className="bg-white rounded-card shadow-md p-6 flex flex-col gap-2">
+                <span className="inline-block w-fit px-2 py-0.5 rounded-full bg-gray-100 text-xs capitalize text-gray-600">
+                  {selected.item.retailer}
+                </span>
+                <p className="text-4xl font-bold text-forest">
+                  $
+                  {selected
+                    .items!.reduce((sum, i) => sum + i.price * (i.quantity ?? 1), 0)
+                    .toFixed(2)}
+                  <span className="ml-2 text-base font-medium text-gray-500">order total</span>
+                </p>
+                <p className="text-sm text-gray-500">
+                  {selected.items!.length} items on hold
+                </p>
+              </div>
+            ) : (
+              <InterceptedItemCard item={selected.item} />
+            )}
+            {(selected.items?.length ?? 0) > 1 && (
+              <div className="bg-white rounded-card shadow-sm p-5">
+                <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-3">
+                  In this order
+                </h3>
+                {selected.items!.map((i, idx) => (
+                  <div
+                    key={`${i.title}-${idx}`}
+                    className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-b-0"
+                  >
+                    {i.image_url ? (
+                      <img
+                        src={i.image_url}
+                        alt={i.title}
+                        className="w-10 h-10 rounded object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-gray-200 flex-shrink-0" />
+                    )}
+                    <p className="truncate flex-1 text-sm text-gray-800">{i.title}</p>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      ×{i.quantity ?? 1} · ${i.price.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <CountdownTimer
+              interceptedAt={selected.intercepted_at}
+              holdMs={holdMs}
+              onExpire={() => setExpired(true)}
+            />
+            <OwnedItemsPanel matches={matchesQ.data?.matches ?? []} loading={matchesQ.isLoading} />
+            <SecondhandPanel
+              listings={secondhandQ.data?.listings ?? []}
+              loading={secondhandQ.isLoading}
+            />
+            <TrueCostPanel trueCost={trueCostQ.data} loading={trueCostQ.isLoading} />
+            <DecisionButtons expired={expired} onDecide={handleDecide} busy={busy} />
+          </>
+        ) : (
+          <>
+            <header className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h1 className="text-4xl font-bold text-gray-900">Vault</h1>
+                <div className="flex gap-1">
+                  {(
+                    [
+                      ['vault', 'Vault'],
+                      ['tracker', 'Spending'],
+                      ['settings', 'Settings'],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setTab(key)}
+                      className={`text-sm px-3 py-1.5 rounded-full ${
+                        tab === key
+                          ? 'bg-forest text-white'
+                          : 'bg-white text-gray-600 shadow-sm hover:bg-gray-50'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {tab === 'vault' && (
+                <>
+                  <div className="bg-forest text-white rounded-card shadow-md p-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
+                    <span className="text-lg font-semibold">${tally.dollars_saved} saved</span>
+                    <span className="opacity-60">·</span>
+                    <span className="text-lg font-semibold">
+                      {tally.kg_co2_avoided} kg CO₂ avoided
+                    </span>
+                    <span className="opacity-60">·</span>
+                    <span className="text-lg font-semibold">
+                      {tally.items_released} items released
+                    </span>
+                  </div>
+                  {monthSpentAnyway > 0 && (
+                    <p className="text-sm text-danger text-center -mt-2">
+                      ${monthSpentAnyway.toFixed(2)} bought anyway this month
+                    </p>
+                  )}
+                </>
+              )}
+            </header>
+            {tab === 'vault' && (
+              <>
+                <VaultList
+                  pending={vault.pending_interceptions}
+                  onOpen={goDetail}
+                  holdMs={holdMs}
+                />
+                <HistoryFeed history={vault.history} />
+              </>
+            )}
+            {tab === 'tracker' && <SpendingTracker history={vault.history} />}
+            {tab === 'settings' && (
+              <SettingsPanel
+                settings={vault.settings}
+                onSave={async (s: VaultSettings) => {
+                  await saveSettings(s);
+                  await reload();
+                }}
+              />
+            )}
+          </>
+        )}
+      </div>
+
+      <ConfettiOverlay
+        fire={confetti !== null}
+        tallyBefore={confetti?.before ?? EMPTY_TALLY}
+        tallyAfter={confetti?.after ?? EMPTY_TALLY}
+      />
+    </div>
+  );
+}

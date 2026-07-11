@@ -27,8 +27,9 @@ Update this section as work progresses so future Claude Code sessions have conte
 - [x] CLIP matching pipeline (/match verified end-to-end with real embeddings; warmed at startup via lifespan; seed order_history embeddings still null so /match returns [] until Gmail sync or a backfill script fills them)
 - [x] Storage (JSON per user), /log /tally /history /true-cost implemented + verified; startup seeding from seed/demo_user.json (order_history embeddings still null — filled by Gmail sync later)
 - [x] eBay mock path (/secondhand + USE_MOCK_EBAY dispatch) — listing data is placeholder, needs human curation; live ebay_service.py pending Production credentials
-- [ ] Extension shell (manifest, content script, background)
-- [ ] Vault dashboard UI
+- [x] Extension shell (manifest, content script, background) — live Shein AU interception verified 2026-07-11: checkout renders in same-origin iframes (all_frames:true required), synthetic preload clicks filtered via isTrusted, deep scanner (shadow DOM + "place order" text fallback), extraction selectors verified against live checkout (order total + carousel img alt). Amazon AU verified live 2026-09-11 (row selector [data-csa-c-slot-id="checkout-item-block-itemBlock"], qty from "Change quantity of…" pattern). Multi-item carts fully itemised (per-item price + quantity, team-approved spec override); Vault shows order total first, then per-item list.
+- [x] Vault dashboard UI (list/detail, countdown, decisions, confetti, popup with Reset Demo Data; demo seed = 1 ticking + 1 expired item)
+- [x] Buy Anyway extensions (team-approved deviations from the spec's "log only" lock, 2026-09-11): checkout URL saved at interception + "Resume checkout" link in history; 30-min per-retailer interception pass after Buy Anyway so the purchase can complete; early-unlock bypass for time-sensitive buys gated by a written justification (≥20 chars, stored locally only, never sent to backend); "$X bought anyway this month" stat computed from history
 - [ ] Landing page
 - [x] Demo seeding script (demo-seeding/: 15 emails inserted via Gmail API messages.insert with backdated internal dates; parsers round-trip verified; re-run `seed_gmail.py` to re-seed)
 - [ ] HF Spaces deployment

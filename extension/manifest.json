@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Vault",
+  "version": "0.1.0",
+  "description": "Interrupts impulse purchases with a mindfulness check.",
+  "permissions": ["storage", "tabs", "identity"],
+  "host_permissions": [
+    "https://*.shein.com/*",
+    "https://*.amazon.com.au/*",
+    "https://*.hf.space/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.shein.com/checkout*",
+        "https://*.amazon.com.au/gp/buy*",
+        "https://*.amazon.com.au/checkout/*",
+        "http://localhost:9999/*"
+      ],
+      "js": ["src/content.ts"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["src/vault/index.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "oauth2": {
+    "client_id": "101210629647-n76uet2jsq44ahb0ugqpraqfi6nji3ai.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/gmail.readonly"]
+  }
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<!-- Local fake Shein checkout: risk-free interception testing + demo-day fallback (per spec). -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SHEIN Checkout (local test)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #fff; }
+    header { padding: 16px 32px; border-bottom: 1px solid #eee; font-weight: 800; font-size: 24px; letter-spacing: 4px; }
+    .wrap { display: flex; gap: 32px; max-width: 1100px; margin: 32px auto; padding: 0 24px; }
+    .left { flex: 2; color: #555; }
+    .panel { border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .right { flex: 1; }
+    .order-summary { border: 1px solid #eee; border-radius: 8px; padding: 20px; }
+    .product-image img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; }
+    .item-row { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+    .product-name { font-weight: 600; font-size: 15px; }
+    .total-row { display: flex; justify-content: space-between; margin-top: 16px; font-weight: 700; }
+    .total-price { color: #fa6338; font-size: 20px; }
+    button.j-place-order { width: 100%; margin-top: 16px; padding: 14px; background: #000; color: #fff;
+      border: none; font-size: 16px; font-weight: 700; cursor: pointer; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>SHEIN</header>
+  <div class="wrap">
+    <div class="left">
+      <div class="panel"><strong>Shipping Address</strong><br />Demo User, 1 Anzac Parade, Kensington NSW 2033</div>
+      <div class="panel"><strong>Payment Method</strong><br />Visa ending 4242</div>
+      <div class="panel"><strong>Delivery</strong><br />Standard Shipping (7-11 business days) — AU$7.95</div>
+    </div>
+    <div class="right">
+      <div class="order-summary">
+        <strong>Order Summary</strong>
+        <div class="item-row">
+          <div class="product-image">
+            <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&q=80" alt="Ripped Skinny Jeans - Mid Wash Blue" />
+          </div>
+          <div>
+            <div class="product-name">Ripped Skinny Jeans - Mid Wash Blue</div>
+            <div style="color:#888;font-size:13px">Size M · Qty: 1 · $42.95</div>
+          </div>
+        </div>
+        <div class="item-row">
+          <div class="product-image">
+            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" alt="Wireless Bluetooth Headphones" />
+          </div>
+          <div>
+            <div class="product-name">Wireless Bluetooth Headphones</div>
+            <div style="color:#888;font-size:13px">Black · Qty: 2 · $89.00</div>
+          </div>
+        </div>
+        <div class="total-row"><span>Order Total:</span><span class="total-price">AU$220.95</span></div>
+        <button class="j-place-order" data-btn-name="Place Order">PLACE ORDER</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
