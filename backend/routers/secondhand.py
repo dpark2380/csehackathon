@@ -10,6 +10,8 @@ router = APIRouter()
 
 class SecondhandRequest(BaseModel):
     title: str
+    # Price of the item being bought: listings must undercut it by >= 10% to be shown.
+    item_price: float | None = None
 
 
 class SecondhandListing(BaseModel):
@@ -31,7 +33,11 @@ def find_secondhand_listings(body: SecondhandRequest) -> SecondhandResponse:
     if use_mock:
         listings = mock_ebay.search(body.title)
     else:
-        from services.ebay_service import EbayService
+        # Module singleton so the OAuth token cache survives across requests.
+        from services.ebay_service import ebay_service
 
-        listings = EbayService().search(body.title)
+        listings = ebay_service.search(body.title)
+    if body.item_price and body.item_price > 0:
+        cap = body.item_price * 0.9
+        listings = [l for l in listings if l["price"] <= cap]
     return SecondhandResponse(listings=listings)
