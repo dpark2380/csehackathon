@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Extension build artifacts
+extension/dist/
+extension/.output/
+
+# Backend data (user JSON files)
+backend/data/*.json
+!backend/data/.gitkeep
+
+# Logs
+*.log

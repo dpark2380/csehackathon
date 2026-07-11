@@ -1,1 +1,1 @@
-# csehackathon
+Vault: Chrome extension for mindful purchasing. UNSW Hackathon 2026.

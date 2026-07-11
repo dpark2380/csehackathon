@@ -1,0 +1,8 @@
+{
+  "fast_fashion_top": { "water_litres": 2700, "kg_co2": 5.5 },
+  "jeans": { "water_litres": 7500, "kg_co2": 33.4 },
+  "shoes": { "water_litres": 4400, "kg_co2": 14.0 },
+  "dress": { "water_litres": 3000, "kg_co2": 8.0 },
+  "electronics_small": { "water_litres": 500, "kg_co2": 40.0 },
+  "default": { "water_litres": 1500, "kg_co2": 5.0 }
+}
