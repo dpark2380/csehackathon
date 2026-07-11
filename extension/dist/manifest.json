@@ -1,0 +1,80 @@
+{
+  "manifest_version": 3,
+  "name": "impulse",
+  "version": "0.1.0",
+  "description": "Interrupts impulse purchases with a mindfulness check.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.shein.com/*",
+    "https://*.amazon.com.au/*",
+    "https://*.hf.space/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/content.ts-loader-B2llpshk.js"
+      ],
+      "matches": [
+        "https://*.shein.com/checkout*",
+        "https://*.amazon.com.au/gp/buy*",
+        "https://*.amazon.com.au/checkout/*",
+        "http://localhost:9999/*"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "src/vault/index.html"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "http://localhost:9999/*",
+        "https://*.amazon.com.au/*",
+        "https://*.amazon.com.au/*",
+        "https://*.shein.com/*"
+      ],
+      "resources": [
+        "assets/categories-DFhcU8LM.js",
+        "assets/content.ts-Dd8URtCc.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ],
+  "oauth2": {
+    "client_id": "101210629647-n76uet2jsq44ahb0ugqpraqfi6nji3ai.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.readonly"
+    ]
+  }
+}
