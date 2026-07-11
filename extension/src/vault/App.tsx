@@ -219,6 +219,15 @@ export default function App() {
       );
     })
     .reduce((sum, h) => sum + h.item.price, 0);
+  const monthSaved = vault.history
+    .filter((h) => {
+      if (h.decision !== 'release' || h.decided_at === undefined) return false;
+      const d = new Date(h.decided_at);
+      return (
+        d.getMonth() === thisMonth.getMonth() && d.getFullYear() === thisMonth.getFullYear()
+      );
+    })
+    .reduce((sum, h) => sum + (h.estimated_savings?.dollars ?? h.item.price), 0);
 
   return (
     <div className="min-h-screen font-sans text-gray-900">
@@ -308,7 +317,13 @@ export default function App() {
               <SecondhandPanel bare groups={secondhandQ.data ?? []} loading={secondhandQ.isLoading} />
             </Section>
             <Section title="True cost" defaultOpen>
-              <TrueCostPanel bare trueCost={trueCostQ.data} loading={trueCostQ.isLoading} />
+              <TrueCostPanel
+                bare
+                trueCost={trueCostQ.data}
+                loading={trueCostQ.isLoading}
+                monthSpent={monthSpentAnyway}
+                monthSaved={monthSaved}
+              />
             </Section>
               </div>
             </div>
@@ -343,11 +358,10 @@ export default function App() {
             </header>
             {tab === 'vault' && (
               <>
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 gap-6">
                   {(
                     [
                       ['Saved', `$${tally.dollars_saved}`],
-                      ['CO₂ avoided', `${tally.kg_co2_avoided} kg`],
                       ['Released', `${tally.items_released} items`],
                     ] as const
                   ).map(([label, value]) => (

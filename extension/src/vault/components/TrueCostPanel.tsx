@@ -5,6 +5,10 @@ interface Props {
   loading?: boolean;
   /** Render content only (no card chrome/heading): for use inside a collapsible section. */
   bare?: boolean;
+  /** $ bought anyway this month, replaces the water-litres stat. */
+  monthSpent?: number;
+  /** $ saved (released) this month, replaces the kg-CO2 stat. */
+  monthSaved?: number;
 }
 
 function Stat({ value, label, colorClass }: { value: string; label: string; colorClass: string }) {
@@ -25,7 +29,7 @@ function StatSkeleton() {
   );
 }
 
-export default function TrueCostPanel({ trueCost, loading, bare }: Props) {
+export default function TrueCostPanel({ trueCost, loading, bare, monthSpent = 0, monthSaved = 0 }: Props) {
   if (!trueCost && !loading) return null;
 
   return (
@@ -42,11 +46,15 @@ export default function TrueCostPanel({ trueCost, loading, bare }: Props) {
           <>
             <Stat value={`${trueCost.work_hours}h`} label="of your work" colorClass="text-forest" />
             <Stat
-              value={`${trueCost.water_litres.toLocaleString()}L`}
-              label="of water"
+              value={`$${monthSpent.toFixed(2)}`}
+              label="spent this month"
+              colorClass="text-danger"
+            />
+            <Stat
+              value={`$${monthSaved.toFixed(2)}`}
+              label="saved this month"
               colorClass="text-forest"
             />
-            <Stat value={`${trueCost.kg_co2}kg`} label="of CO₂" colorClass="text-danger" />
           </>
         )}
       </div>
