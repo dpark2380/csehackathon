@@ -24,7 +24,7 @@ export default function DecisionButtons({ expired, onDecide, busy }: Props) {
         type="button"
         disabled={busy}
         onClick={() => onDecide('release')}
-        className="w-full bg-forest text-white text-lg font-semibold py-4 rounded-card shadow-md transition hover:bg-forest/90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-forest text-white text-lg font-semibold py-4 rounded-card transition hover:bg-forest/90 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
       >
         Release &amp; Save
       </button>
@@ -40,7 +40,7 @@ export default function DecisionButtons({ expired, onDecide, busy }: Props) {
         </button>
         {!unlocked && <span className="text-xs text-gray-400">unlocks when the timer ends</span>}
         {!expired && unlockedReason !== undefined && (
-          <span className="text-xs text-danger">unlocked early — your reason is on the record</span>
+          <span className="text-xs text-danger">unlocked early: your reason is on the record</span>
         )}
       </div>
 
@@ -55,7 +55,7 @@ export default function DecisionButtons({ expired, onDecide, busy }: Props) {
       )}
 
       {!unlocked && showForm && (
-        <div className="bg-white rounded-card shadow-sm p-5 flex flex-col gap-3">
+        <div className="bg-white rounded-card border border-gray-200 p-5 flex flex-col gap-3">
           <p className="text-sm text-gray-700 font-medium">
             Before we unlock this: write down who this is for and why it truly can&apos;t wait 24
             hours. Your future self will read this.

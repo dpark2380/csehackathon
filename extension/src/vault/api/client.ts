@@ -47,8 +47,12 @@ export const api = {
     });
   },
 
-  getSecondhand(title: string): Promise<SecondhandResponse> {
-    return post<SecondhandResponse>('/secondhand', { title });
+  getSecondhand(title: string, item_price?: number): Promise<SecondhandResponse> {
+    return post<SecondhandResponse>('/secondhand', { title, item_price });
+  },
+
+  categorize(image_url: string, title: string): Promise<{ category: string }> {
+    return post<{ category: string }>('/categorize', { image_url, title });
   },
 
   getTrueCost(price: number, category: string, hourly_rate: number): Promise<TrueCostResponse> {

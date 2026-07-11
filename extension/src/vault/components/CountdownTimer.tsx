@@ -46,13 +46,36 @@ export default function CountdownTimer({ interceptedAt, onExpire, holdMs }: Prop
   const R = 90;
   const C = 2 * Math.PI * R;
   const offset = C * (1 - fraction);
-  const color = expired || urgent ? '#BC4749' : '#2D6A4F';
+  // Theme tokens, so the ring follows light/dark automatically.
+  const color = expired || urgent ? 'var(--color-danger)' : 'var(--color-accent)';
+
+  // Expired: no ring, just a flat statement that the hold is over.
+  if (expired) {
+    return (
+      <div className="bg-danger/10 rounded-card px-5 py-4 flex items-center justify-between">
+        <div>
+          <p className="text-lg font-semibold text-danger">Time ran out</p>
+          <p className="text-sm text-gray-600">The hold is over. Make your call below.</p>
+        </div>
+        <span className="text-2xl" aria-hidden>
+          ⏳
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-card shadow-sm p-6 flex flex-col items-center">
+    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col items-center">
       <div className="relative" style={{ width: 200, height: 200 }}>
         <svg width={200} height={200} viewBox="0 0 200 200">
-          <circle cx={100} cy={100} r={R} fill="none" stroke="#e5e7eb" strokeWidth={12} />
+          <circle
+            cx={100}
+            cy={100}
+            r={R}
+            fill="none"
+            style={{ stroke: 'var(--color-ring)' }}
+            strokeWidth={12}
+          />
           <g transform="rotate(-90 100 100)">
             <motion.circle
               cx={100}
@@ -71,10 +94,10 @@ export default function CountdownTimer({ interceptedAt, onExpire, holdMs }: Prop
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {expired ? (
-            <span className="text-3xl font-bold text-danger">Decision time</span>
+            <span className="text-3xl font-semibold text-danger">Decision time</span>
           ) : (
             <>
-              <span className="text-4xl font-bold tabular-nums text-gray-900">
+              <span className="text-4xl font-semibold tabular-nums text-gray-900">
                 {format(remaining)}
               </span>
               <span className="text-sm text-gray-500 mt-1">until decision time</span>

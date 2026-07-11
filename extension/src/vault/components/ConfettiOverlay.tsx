@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import type { Tally } from '../../shared/types';
 
-const PALETTE = ['#2D6A4F', '#F5F1EA', '#E9C46A'];
+const PALETTE = ['#2456C4', '#FFFFFF', '#82AAF6'];
 const DURATION = 1200;
 
 interface Props {
@@ -60,20 +60,20 @@ export default function ConfettiOverlay({ fire, tallyBefore, tallyAfter }: Props
             animate={{ scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 18 }}
           >
-            <p className="text-2xl font-bold text-forest">
+            <p className="text-2xl font-semibold text-forest">
               +${gained.toFixed(2)} released back to your future
             </p>
             <div className="mt-5 flex gap-8 justify-center">
               <div>
-                <p className="text-3xl font-bold text-forest tabular-nums">${dollars.toFixed(0)}</p>
+                <p className="text-3xl font-semibold text-forest tabular-nums">${dollars.toFixed(0)}</p>
                 <p className="text-sm text-gray-500">saved</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-forest tabular-nums">{co2.toFixed(1)}</p>
+                <p className="text-3xl font-semibold text-forest tabular-nums">{co2.toFixed(1)}</p>
                 <p className="text-sm text-gray-500">kg CO₂</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-forest tabular-nums">{Math.round(items)}</p>
+                <p className="text-3xl font-semibold text-forest tabular-nums">{Math.round(items)}</p>
                 <p className="text-sm text-gray-500">released</p>
               </div>
             </div>

@@ -25,25 +25,58 @@ interface Row {
   fraction: number;
 }
 
+type BuyKind = 'expired' | 'early' | 'whitelisted';
+const KIND_LABELS: Record<BuyKind, string> = {
+  expired: 'After the timer ended',
+  early: 'Unlocked early (bypass)',
+  whitelisted: 'Whitelisted (never held)',
+};
+
+function buyKind(h: Interception): BuyKind {
+  if (h.bought_kind === 'whitelisted') return 'whitelisted';
+  return h.bypass_reason ? 'early' : 'expired';
+}
+
 function computeRows(
   history: Interception[],
   period: Period
-): { rows: Row[]; totalSpent: number; totalCount: number } {
+): {
+  rows: Row[];
+  totalSpent: number;
+  totalCount: number;
+  kinds: { kind: BuyKind; spent: number; count: number }[];
+  purchases: {
+    key: string;
+    title: string;
+    qty: number;
+    spent: number;
+    decided_at: number;
+    category: string;
+  }[];
+} {
   const cutoff = Date.now() - PERIOD_MS[period];
   const byCat = new Map<string, { spent: number; count: number }>();
+  const byKind = new Map<BuyKind, { spent: number; count: number }>();
   let totalSpent = 0;
   let totalCount = 0;
 
   for (const h of history) {
     if (h.decision !== 'buy' || h.decided_at === undefined || h.decided_at < cutoff) continue;
+    const kind = buyKind(h);
     for (const item of h.items ?? [h.item]) {
-      const cat = broadCategorize(item.title);
+      // CLIP-resolved category wins (including an explicit 'unknown');
+      // keyword fallback only for legacy items that predate classification.
+      const cat = item.broad_category ?? broadCategorize(item.title);
       const qty = item.quantity ?? 1;
       const spent = item.price * qty;
       const agg = byCat.get(cat) ?? { spent: 0, count: 0 };
       agg.spent += spent;
       agg.count += qty;
       byCat.set(cat, agg);
+      const kagg = byKind.get(kind) ?? { spent: 0, count: 0 };
+      kagg.spent += spent;
+      kagg.count += qty;
+      byKind.set(kind, kagg);
       totalSpent += spent;
       totalCount += qty;
     }
@@ -55,12 +88,32 @@ function computeRows(
       ...agg,
       fraction: totalSpent > 0 ? agg.spent / totalSpent : 0,
     }))
-    // Rank by spend, but "Other" always sits last by convention.
-    .sort((a, b) =>
-      a.category === 'other' ? 1 : b.category === 'other' ? -1 : b.spent - a.spent
-    );
+    // Rank by spend, but "Other" and "Unknown" always sit last by convention.
+    .sort((a, b) => {
+      const tail = (c: string) => (c === 'other' ? 1 : c === 'unknown' ? 2 : 0);
+      return tail(a.category) - tail(b.category) || b.spent - a.spent;
+    });
 
-  return { rows, totalSpent, totalCount };
+  const kinds = (['expired', 'early', 'whitelisted'] as BuyKind[])
+    .map((kind) => ({ kind, ...(byKind.get(kind) ?? { spent: 0, count: 0 }) }))
+    .filter((k) => k.count > 0);
+
+  // Flat itemised list of everything bought in the period, newest first.
+  const purchases = history
+    .filter((h) => h.decision === 'buy' && h.decided_at !== undefined && h.decided_at >= cutoff)
+    .flatMap((h) =>
+      (h.items ?? [h.item]).map((item, idx) => ({
+        key: `${h.id}-${idx}`,
+        title: item.title,
+        qty: item.quantity ?? 1,
+        spent: item.price * (item.quantity ?? 1),
+        decided_at: h.decided_at!,
+        category: item.broad_category ?? broadCategorize(item.title),
+      }))
+    )
+    .sort((a, b) => b.decided_at - a.decided_at);
+
+  return { rows, totalSpent, totalCount, kinds, purchases };
 }
 
 // Annular-sector path; angles in radians, 12 o'clock start, clockwise.
@@ -81,7 +134,7 @@ function slicePath(cx: number, cy: number, rO: number, rI: number, a0: number, a
 export default function SpendingTracker({ history }: Props) {
   const [period, setPeriod] = useState<Period>('month');
   const [hovered, setHovered] = useState<string | null>(null);
-  const { rows, totalSpent, totalCount } = computeRows(history, period);
+  const { rows, totalSpent, totalCount, kinds, purchases } = computeRows(history, period);
 
   const hoveredRow = rows.find((r) => r.category === hovered) ?? null;
 
@@ -93,7 +146,7 @@ export default function SpendingTracker({ history }: Props) {
   });
 
   return (
-    <div className="bg-white rounded-card shadow-sm p-6 flex flex-col gap-5">
+    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h3 className="uppercase tracking-wide text-sm text-gray-500">Money spent anyway</h3>
         <div className="flex gap-1">
@@ -125,7 +178,7 @@ export default function SpendingTracker({ history }: Props) {
                   key={s.category}
                   d={slicePath(105, 105, 100, 70, s.a0, s.a1)}
                   fill={BROAD_COLORS[s.category] ?? BROAD_COLORS.other}
-                  stroke="#ffffff"
+                  stroke="var(--color-bg-surface)"
                   strokeWidth={2}
                   opacity={hovered === null || hovered === s.category ? 1 : 0.35}
                   onMouseEnter={() => setHovered(s.category)}
@@ -142,7 +195,7 @@ export default function SpendingTracker({ history }: Props) {
               {hoveredRow ? (
                 <>
                   <span className="text-sm text-gray-500">{BROAD_LABELS[hoveredRow.category]}</span>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-2xl font-semibold text-gray-900">
                     ${hoveredRow.spent.toFixed(2)}
                   </span>
                   <span className="text-sm text-gray-500">
@@ -151,7 +204,7 @@ export default function SpendingTracker({ history }: Props) {
                 </>
               ) : (
                 <>
-                  <span className="text-3xl font-bold text-gray-900">
+                  <span className="text-3xl font-semibold text-gray-900">
                     ${totalSpent.toFixed(totalSpent >= 1000 ? 0 : 2)}
                   </span>
                   <span className="text-sm text-gray-500">
@@ -188,6 +241,53 @@ export default function SpendingTracker({ history }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {purchases.length > 0 && (
+        <div className="border-t border-gray-100 pt-4">
+          <h4 className="uppercase tracking-wide text-xs text-gray-500 mb-2">
+            Everything you bought
+          </h4>
+          {purchases.map((p) => (
+            <div
+              key={p.key}
+              className="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-b-0"
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+                style={{ background: BROAD_COLORS[p.category] ?? BROAD_COLORS.other }}
+                title={BROAD_LABELS[p.category] ?? p.category}
+              />
+              <p className="truncate flex-1 text-sm text-gray-800">{p.title}</p>
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                {new Date(p.decided_at).toLocaleDateString('en-AU', {
+                  day: 'numeric',
+                  month: 'short',
+                })}
+                {p.qty > 1 ? ` · ×${p.qty}` : ''} ·{' '}
+                <span className="font-semibold text-gray-900">${p.spent.toFixed(2)}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {kinds.length > 0 && (
+        <div className="border-t border-gray-100 pt-4">
+          <h4 className="uppercase tracking-wide text-xs text-gray-500 mb-2">How it was bought</h4>
+          {kinds.map((k) => (
+            <div
+              key={k.kind}
+              className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0"
+            >
+              <span className="text-sm text-gray-800">{KIND_LABELS[k.kind]}</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                {k.count} item{k.count === 1 ? '' : 's'} ·{' '}
+                <span className="font-semibold text-gray-900">${k.spent.toFixed(2)}</span>
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>

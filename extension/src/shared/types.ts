@@ -14,6 +14,8 @@ export interface InterceptedItem {
   quantity?: number;
   /** True-cost-table category derived from the title (see shared/categories.ts). */
   category?: string;
+  /** Broad spending category from CLIP zero-shot ('unknown' when unclassifiable). */
+  broad_category?: string;
   /** Checkout page URL at interception, so Buy Anyway can offer a way back. */
   checkout_url?: string;
 }
@@ -31,6 +33,8 @@ export interface Interception {
   estimated_savings?: EstimatedSavings;
   /** Written justification when the 24h timer was bypassed (gift/time-sensitive). Local only. */
   bypass_reason?: string;
+  /** 'whitelisted' when the purchase sailed through un-intercepted (recorded, never held). */
+  bought_kind?: 'whitelisted';
 }
 
 export interface EstimatedSavings {
@@ -95,6 +99,8 @@ export interface VaultSettings {
   whitelist_categories: string[];
   /** Carts under this total sail through without interception. 0 disables. */
   min_price: number;
+  /** UI theme: 'system' follows prefers-color-scheme with zero JS at load. */
+  theme?: 'system' | 'light' | 'dark';
 }
 
 // ---- chrome.storage.local schema ----
@@ -111,4 +117,6 @@ export interface VaultStorage {
 
 // ---- runtime messages ----
 
-export type VaultMessage = { type: 'INTERCEPT'; item: InterceptedItem; items?: InterceptedItem[] };
+export type VaultMessage =
+  | { type: 'INTERCEPT'; item: InterceptedItem; items?: InterceptedItem[] }
+  | { type: 'PASSTHROUGH'; items: InterceptedItem[]; reason: 'whitelisted' };

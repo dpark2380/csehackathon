@@ -46,7 +46,11 @@ function HistoryRow({ record }: { record: Interception }) {
             title={record.bypass_reason ? `Reason given: ${record.bypass_reason}` : undefined}
             className="text-xs rounded-full px-2 py-1 bg-gray-200 text-gray-600 whitespace-nowrap"
           >
-            {record.bypass_reason ? 'Bought early' : 'Bought anyway'}
+            {record.bought_kind === 'whitelisted'
+              ? 'Whitelisted'
+              : record.bypass_reason
+                ? 'Bought early'
+                : 'Bought anyway'}
           </span>
           {item.checkout_url && (
             <a
@@ -68,7 +72,7 @@ export default function HistoryFeed({ history }: Props) {
   const sorted = [...history].sort((a, b) => (b.decided_at ?? 0) - (a.decided_at ?? 0));
 
   return (
-    <div className="bg-white rounded-card shadow-sm p-5">
+    <div className="bg-white rounded-card border border-gray-200 p-5">
       <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">History</h3>
       {sorted.length === 0 ? (
         <p className="text-base text-gray-500">No decisions yet.</p>

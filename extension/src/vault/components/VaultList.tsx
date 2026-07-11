@@ -45,17 +45,18 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
 
   if (pending.length === 0) {
     return (
-      <div className="bg-white rounded-card shadow-sm p-8 text-center">
-        <p className="text-lg text-gray-500">Nothing in your Vault. Go live your life.</p>
+      <div className="bg-white rounded-card border border-gray-200 p-8 text-center">
+        <p className="text-lg text-gray-500">Nothing held right now. Go live your life.</p>
       </div>
     );
   }
 
   const sorted = [...pending].sort((a, b) => a.intercepted_at - b.intercepted_at);
+  const hold = holdMs ?? DAY_MS;
+  const needsDecision = sorted.filter((i) => now >= i.intercepted_at + hold);
+  const onHold = sorted.filter((i) => now < i.intercepted_at + hold);
 
-  return (
-    <div className="flex flex-col gap-3">
-      {sorted.map((interception) => {
+  const renderCard = (interception: Interception) => {
         const { item } = interception;
         const mini = miniLabel(interception.intercepted_at, now, holdMs ?? DAY_MS);
         return (
@@ -63,7 +64,7 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
             key={interception.id}
             type="button"
             onClick={() => onOpen(interception.id)}
-            className="w-full text-left bg-white rounded-card shadow-sm p-4 flex gap-4 items-center transition hover:shadow-md hover:-translate-y-0.5"
+            className="w-full text-left bg-white rounded-card border border-gray-200 p-5 flex gap-4 items-center transition hover:border-gray-300 hover:-translate-y-0.5"
           >
             <Thumb src={item.image_url} alt={item.title} />
             <div className="min-w-0 flex-1 flex flex-col gap-1">
@@ -76,7 +77,7 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
                   <span className="ml-1 text-sm text-gray-500">×{item.quantity}</span>
                 )}
               </p>
-              <p className="text-xl font-bold text-forest">
+              <p className="text-xl font-semibold text-forest">
                 $
                 {(interception.items ?? [item])
                   .reduce((sum, i) => sum + i.price * (i.quantity ?? 1), 0)
@@ -96,8 +97,25 @@ export default function VaultList({ pending, onOpen, holdMs }: Props) {
               {mini.text}
             </span>
           </button>
-        );
-      })}
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      {needsDecision.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h3 className="uppercase tracking-wide text-sm text-danger font-medium">
+            Needs your decision
+          </h3>
+          {needsDecision.map(renderCard)}
+        </div>
+      )}
+      {onHold.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <h3 className="uppercase tracking-wide text-sm text-gray-500">On hold</h3>
+          {onHold.map(renderCard)}
+        </div>
+      )}
     </div>
   );
 }

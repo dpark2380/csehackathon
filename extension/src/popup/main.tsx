@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../vault/styles.css';
-import { ensureSeeded, getUserId, resetDemoData } from '../shared/storage';
+import { applyTheme, ensureSeeded, getUserId, getVault, resetDemoData } from '../shared/storage';
 import { api } from '../vault/api/client';
 
 function Popup() {
@@ -13,6 +13,7 @@ function Popup() {
   useEffect(() => {
     (async () => {
       await ensureSeeded();
+      applyTheme((await getVault()).settings.theme);
       setUserId(await getUserId());
       setLoading(false);
     })();
@@ -41,7 +42,7 @@ function Popup() {
 
   return (
     <div className="w-80 bg-cream p-4 font-sans text-forest">
-      <h1 className="mb-3 text-lg font-semibold">Vault</h1>
+      <h1 className="mb-3 text-lg font-semibold">impulse</h1>
 
       {!loading && (
         <div className="mb-3">
@@ -63,7 +64,7 @@ function Popup() {
         onClick={openVault}
         className="w-full rounded-card border border-forest px-3 py-2 text-sm font-medium text-forest"
       >
-        Open Vault
+        Open impulse
       </button>
 
       <div className="mt-4 text-right">

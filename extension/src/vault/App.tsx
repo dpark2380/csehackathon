@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Decision, Tally, VaultStorage } from '../shared/types';
 import type { VaultSettings } from '../shared/types';
 import {
+  applyTheme,
   captureUserIdFromUrl,
   decideInterception,
   ensureSeeded,
@@ -10,6 +11,7 @@ import {
   grantBuyPass,
   saveSettings,
 } from '../shared/storage';
+import { WHITELIST_LABELS, bucketOfItem } from '../shared/categories';
 import SettingsPanel from './components/SettingsPanel';
 import SpendingTracker from './components/SpendingTracker';
 import { api } from './api/client';
@@ -25,6 +27,39 @@ import VaultList from './components/VaultList';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EMPTY_TALLY: Tally = { dollars_saved: 0, kg_co2_avoided: 0, items_released: 0 };
+
+/** Collapsible card section: keeps the detail page scannable (native <details>, no JS). */
+function Section({
+  title,
+  badge,
+  defaultOpen,
+  children,
+}: {
+  title: string;
+  badge?: number;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group bg-white rounded-card border border-gray-200 open:pb-5"
+    >
+      <summary className="flex items-center justify-between cursor-pointer select-none list-none px-5 py-4">
+        <span className="uppercase tracking-wide text-sm text-gray-500">
+          {title}
+          {badge !== undefined && badge > 0 && (
+            <span className="ml-2 normal-case tracking-normal text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">
+              {badge}
+            </span>
+          )}
+        </span>
+        <span className="text-gray-400 transition-transform group-open:rotate-180">⌄</span>
+      </summary>
+      <div className="px-5">{children}</div>
+    </details>
+  );
+}
 
 function setIdParam(id: string | null): void {
   const url = new URL(window.location.href);
@@ -43,7 +78,9 @@ export default function App() {
   const [confetti, setConfetti] = useState<{ before: Tally; after: Tally } | null>(null);
 
   const reload = useCallback(async () => {
-    setVault(await getVault());
+    const v = await getVault();
+    setVault(v);
+    applyTheme(v.settings.theme); // explicit override only; 'system' stays pure CSS
   }, []);
 
   useEffect(() => {
@@ -91,7 +128,18 @@ export default function App() {
   const secondhandQ = useQuery({
     queryKey: ['secondhand', selectedId],
     enabled,
-    queryFn: () => api.getSecondhand(item!.title),
+    // One search per line item (capped at 4), each with its own >=10%-cheaper price cap.
+    queryFn: async () => {
+      const lineItems = selected!.items ?? [selected!.item];
+      return Promise.all(
+        lineItems.slice(0, 4).map((i) =>
+          api
+            .getSecondhand(i.title, i.price)
+            .then((r) => ({ itemTitle: i.title, listings: r.listings }))
+            .catch(() => ({ itemTitle: i.title, listings: [] }))
+        )
+      );
+    },
   });
   const trueCostQ = useQuery({
     queryKey: ['trueCost', selectedId],
@@ -155,7 +203,7 @@ export default function App() {
   if (!ready || !vault) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
-        <p className="text-lg text-gray-500">Loading your Vault…</p>
+        <p className="text-lg text-gray-500">Loading impulse…</p>
       </div>
     );
   }
@@ -182,14 +230,14 @@ export default function App() {
               onClick={goList}
               className="self-start text-sm text-forest font-medium hover:underline"
             >
-              ← Back to Vault
+              ← Back to impulse
             </button>
             {(selected.items?.length ?? 1) > 1 ? (
-              <div className="bg-white rounded-card shadow-md p-6 flex flex-col gap-2">
+              <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-2">
                 <span className="inline-block w-fit px-2 py-0.5 rounded-full bg-gray-100 text-xs capitalize text-gray-600">
                   {selected.item.retailer}
                 </span>
-                <p className="text-4xl font-bold text-forest">
+                <p className="text-4xl font-semibold text-forest">
                   $
                   {selected
                     .items!.reduce((sum, i) => sum + i.price * (i.quantity ?? 1), 0)
@@ -204,7 +252,7 @@ export default function App() {
               <InterceptedItemCard item={selected.item} />
             )}
             {(selected.items?.length ?? 0) > 1 && (
-              <div className="bg-white rounded-card shadow-sm p-5">
+              <div className="bg-white rounded-card border border-gray-200 p-5">
                 <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-3">
                   In this order
                 </h3>
@@ -222,7 +270,10 @@ export default function App() {
                     ) : (
                       <div className="w-10 h-10 rounded bg-gray-200 flex-shrink-0" />
                     )}
-                    <p className="truncate flex-1 text-sm text-gray-800">{i.title}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-gray-800">{i.title}</p>
+                      <p className="text-xs text-gray-500">{WHITELIST_LABELS[bucketOfItem(i)]}</p>
+                    </div>
                     <span className="text-sm text-gray-500 whitespace-nowrap">
                       ×{i.quantity ?? 1} · ${i.price.toFixed(2)}
                     </span>
@@ -235,23 +286,33 @@ export default function App() {
               holdMs={holdMs}
               onExpire={() => setExpired(true)}
             />
-            <OwnedItemsPanel matches={matchesQ.data?.matches ?? []} loading={matchesQ.isLoading} />
-            <SecondhandPanel
-              listings={secondhandQ.data?.listings ?? []}
-              loading={secondhandQ.isLoading}
-            />
-            <TrueCostPanel trueCost={trueCostQ.data} loading={trueCostQ.isLoading} />
             <DecisionButtons expired={expired} onDecide={handleDecide} busy={busy} />
+            <Section title="You already own" badge={matchesQ.data?.matches.length} defaultOpen>
+              <OwnedItemsPanel
+                bare
+                matches={matchesQ.data?.matches ?? []}
+                loading={matchesQ.isLoading}
+              />
+            </Section>
+            <Section
+              title="Same item, secondhand"
+              badge={(secondhandQ.data ?? []).reduce((n, g) => n + g.listings.length, 0)}
+            >
+              <SecondhandPanel bare groups={secondhandQ.data ?? []} loading={secondhandQ.isLoading} />
+            </Section>
+            <Section title="True cost">
+              <TrueCostPanel bare trueCost={trueCostQ.data} loading={trueCostQ.isLoading} />
+            </Section>
           </>
         ) : (
           <>
             <header className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-bold text-gray-900">Vault</h1>
+                <h1 className="text-4xl font-semibold text-gray-900">impulse</h1>
                 <div className="flex gap-1">
                   {(
                     [
-                      ['vault', 'Vault'],
+                      ['vault', 'Held'],
                       ['tracker', 'Spending'],
                       ['settings', 'Settings'],
                     ] as const
@@ -263,7 +324,7 @@ export default function App() {
                       className={`text-sm px-3 py-1.5 rounded-full ${
                         tab === key
                           ? 'bg-forest text-white'
-                          : 'bg-white text-gray-600 shadow-sm hover:bg-gray-50'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
                       }`}
                     >
                       {label}
@@ -273,21 +334,33 @@ export default function App() {
               </div>
               {tab === 'vault' && (
                 <>
-                  <div className="bg-forest text-white rounded-card shadow-md p-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center">
-                    <span className="text-lg font-semibold">${tally.dollars_saved} saved</span>
-                    <span className="opacity-60">·</span>
-                    <span className="text-lg font-semibold">
-                      {tally.kg_co2_avoided} kg CO₂ avoided
-                    </span>
-                    <span className="opacity-60">·</span>
-                    <span className="text-lg font-semibold">
-                      {tally.items_released} items released
-                    </span>
+                  <div className="grid grid-cols-3 gap-4">
+                    {(
+                      [
+                        ['Saved', `$${tally.dollars_saved}`],
+                        ['CO₂ avoided', `${tally.kg_co2_avoided} kg`],
+                        ['Released', `${tally.items_released} items`],
+                      ] as const
+                    ).map(([label, value]) => (
+                      <div key={label} className="bg-white rounded-card border border-gray-200 p-4">
+                        <p className="text-xs text-gray-500 mb-1">{label}</p>
+                        <p className="text-2xl font-semibold text-gray-900">{value}</p>
+                      </div>
+                    ))}
                   </div>
                   {monthSpentAnyway > 0 && (
-                    <p className="text-sm text-danger text-center -mt-2">
-                      ${monthSpentAnyway.toFixed(2)} bought anyway this month
-                    </p>
+                    <div className="bg-tint rounded-card px-4 py-3 flex items-center justify-between">
+                      <span className="text-sm text-tint-fg">
+                        ${monthSpentAnyway.toFixed(2)} bought anyway this month
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setTab('tracker')}
+                        className="text-sm font-medium text-white bg-accent rounded-lg px-3 py-1.5 hover:bg-accent/90"
+                      >
+                        Review
+                      </button>
+                    </div>
                   )}
                 </>
               )}

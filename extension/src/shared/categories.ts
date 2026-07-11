@@ -42,6 +42,7 @@ export const BROAD_LABELS: Record<string, string> = {
   stationery: 'Stationery',
   home: 'Home',
   other: 'Other',
+  unknown: 'Unknown',
 };
 
 // Fixed slot assignment from the validated categorical palette — color follows the
@@ -55,6 +56,7 @@ export const BROAD_COLORS: Record<string, string> = {
   stationery: '#e34948',
   home: '#e87ba4',
   other: '#898781',
+  unknown: '#c3c2b7',
 };
 
 // Order matters: medicine before food ("vitamin gummies"), beverages before food
@@ -69,7 +71,7 @@ const BROAD_RULES: [RegExp, string][] = [
     'beverages',
   ],
   [
-    /snack|chocolate|chip|biscuit|cookie|pasta|rice|cereal|noodle|sauce|candy|lolly|protein bar|granola|food/i,
+    /snack|chocolate|chip|biscuit|cookie|pasta|rice|cereal|noodle|ramen|soup|sauce|candy|lolly|protein bar|granola|muesli|oats|tuna|honey|jam\b|spread|food/i,
     'food',
   ],
   [
@@ -81,7 +83,7 @@ const BROAD_RULES: [RegExp, string][] = [
     'electronics',
   ],
   [
-    /pencil|pen\b|notebook|paper|stationery|marker|eraser|stapler|binder|diary|highlighter/i,
+    /pencil|pen\b|pens\b|notebook|notepad|paper|stationery|stationary|marker|eraser|stapler|binder|diary|highlighter|ruler|sharpener|sticky note|post-it|crayon|sketchbook|journal|folder|envelope|clipboard|whiteboard/i,
     'stationery',
   ],
   [
@@ -95,4 +97,50 @@ export function broadCategorize(title: string): string {
     if (re.test(title)) return cat;
   }
   return 'other';
+}
+
+// ---- Whitelist buckets (settings + item chips) ----
+// Coarser, user-facing set. The spending tracker keeps the finer broad set;
+// these buckets exist so "what the chip says" matches "what you can whitelist".
+
+export const WHITELIST_LABELS: Record<string, string> = {
+  electronics: 'Electronics',
+  clothes: 'Clothes',
+  essentials: 'Essentials (food, drinks & medicine)',
+  toys: 'Toys',
+  home: 'Home',
+  office: 'Office',
+  pets: 'Pet supplies',
+  other: 'Other',
+};
+
+export const WHITELIST_KEYS = Object.keys(WHITELIST_LABELS);
+
+const TOYS_RE = /lego|toy\b|toys\b|puzzle|doll|plush|board game|action figure|nerf|playset|jigsaw/i;
+const PETS_RE = /pet\b|pets\b|dog (?:food|bed|treat|toy|leash)|cat (?:food|litter|tree|tower)|leash|kennel|aquarium|bird ?cage|chew toy|scratching post/i;
+
+const BROAD_TO_BUCKET: Record<string, string> = {
+  electronics: 'electronics',
+  clothes: 'clothes',
+  food: 'essentials',
+  beverages: 'essentials',
+  medicine: 'essentials',
+  stationery: 'office',
+  home: 'home',
+};
+
+/** Whitelist bucket from a title alone (sync, safe in the content script). */
+export function whitelistBucket(title: string): string {
+  if (TOYS_RE.test(title)) return 'toys';
+  if (PETS_RE.test(title)) return 'pets';
+  return BROAD_TO_BUCKET[broadCategorize(title)] ?? 'other';
+}
+
+/** Display bucket for an item: prefer the CLIP-resolved broad category, keyword fallback. */
+export function bucketOfItem(item: { title: string; broad_category?: string }): string {
+  if (item.broad_category && item.broad_category !== 'unknown') {
+    const mapped = BROAD_TO_BUCKET[item.broad_category];
+    if (mapped) return mapped;
+  }
+  return whitelistBucket(item.title);
 }

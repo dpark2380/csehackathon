@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CATEGORY_KEYS, CATEGORY_LABELS } from '../../shared/categories';
+import { WHITELIST_KEYS, WHITELIST_LABELS } from '../../shared/categories';
+import { applyTheme } from '../../shared/storage';
 import type { VaultSettings } from '../../shared/types';
 
 interface Props {
@@ -26,7 +27,7 @@ export default function SettingsPanel({ settings, onSave }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-card shadow-sm p-6 flex flex-col gap-6">
+    <div className="bg-white rounded-card border border-gray-200 p-6 flex flex-col gap-6">
       <h3 className="uppercase tracking-wide text-sm text-gray-500">Settings</h3>
 
       <label className="flex flex-col gap-1">
@@ -61,7 +62,7 @@ export default function SettingsPanel({ settings, onSave }: Props) {
           Orders made up entirely of these categories go straight through.
         </span>
         <div className="grid grid-cols-2 gap-2">
-          {CATEGORY_KEYS.map((cat) => (
+          {WHITELIST_KEYS.map((cat) => (
             <label key={cat} className="flex items-center gap-2 text-sm text-gray-800">
               <input
                 type="checkbox"
@@ -69,10 +70,37 @@ export default function SettingsPanel({ settings, onSave }: Props) {
                 onChange={() => toggleCategory(cat)}
                 className="accent-forest"
               />
-              {CATEGORY_LABELS[cat]}
+              {WHITELIST_LABELS[cat]}
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-gray-700">Theme</span>
+        <div className="flex gap-2">
+          {(['system', 'light', 'dark'] as const).map((th) => (
+            <button
+              key={th}
+              type="button"
+              onClick={() => {
+                // Theme applies and persists instantly: no Save press needed.
+                const next = { ...draft, theme: th };
+                setDraft(next);
+                applyTheme(th);
+                onSave(next);
+              }}
+              className={`text-sm px-3 py-1.5 rounded-full capitalize ${
+                (draft.theme ?? 'system') === th
+                  ? 'bg-forest text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {th}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-gray-400">System follows your OS preference.</span>
       </div>
 
       <label className="flex flex-col gap-1">

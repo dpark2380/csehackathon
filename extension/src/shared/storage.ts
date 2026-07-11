@@ -15,7 +15,21 @@ export const DEFAULT_SETTINGS: VaultSettings = {
   hold_hours: 24,
   whitelist_categories: [],
   min_price: 0,
+  theme: 'system',
 };
+
+/**
+ * Apply a theme to the current document. 'system' removes the attribute so the
+ * pure-CSS prefers-color-scheme fallback governs (no JS needed at initial load —
+ * this only runs for explicit user overrides).
+ */
+export function applyTheme(theme: VaultSettings['theme']): void {
+  if (theme === 'light' || theme === 'dark') {
+    document.documentElement.dataset.theme = theme;
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+}
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -82,10 +96,31 @@ export async function captureUserIdFromUrl(): Promise<string | undefined> {
   return getUserId();
 }
 
+/** Write CLIP-resolved broad categories onto a pending interception's items (index-aligned). */
+export async function setItemBroadCategories(id: string, categories: string[]): Promise<void> {
+  const vault = await getVault();
+  const it = vault.pending_interceptions.find((p) => p.id === id);
+  if (!it) return;
+  const items = it.items ?? [it.item];
+  items.forEach((item, i) => {
+    item.broad_category = categories[i] ?? 'unknown';
+  });
+  it.items = items;
+  it.item = items[0];
+  await setVault({ pending_interceptions: vault.pending_interceptions });
+}
+
 export async function addPendingInterception(i: Interception): Promise<void> {
   const vault = await getVault();
   vault.pending_interceptions.push(i);
   await setVault({ pending_interceptions: vault.pending_interceptions });
+}
+
+/** Record an already-decided entry (e.g. whitelisted passthrough) straight to history. */
+export async function addHistoryEntry(i: Interception): Promise<void> {
+  const vault = await getVault();
+  vault.history.push(i);
+  await setVault({ history: vault.history });
 }
 
 /**
@@ -183,6 +218,74 @@ export function demoSeed(): VaultStorage {
         intercepted_at: now - 5 * 24 * 60 * 60 * 1000,
         decision: 'buy',
         decided_at: now - 5 * 24 * 60 * 60 * 1000 + 2 * 60 * 1000,
+      },
+      {
+        id: 'demo-history-3',
+        item: {
+          title: 'Panadol Rapid Paracetamol 40 Caplets',
+          image_url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80',
+          price: 9.5,
+          retailer: 'amazon',
+          broad_category: 'medicine',
+        },
+        intercepted_at: now - 2 * 24 * 60 * 60 * 1000 - 25 * 60 * 60 * 1000,
+        decision: 'buy',
+        decided_at: now - 2 * 24 * 60 * 60 * 1000,
+      },
+      {
+        id: 'demo-history-4',
+        item: {
+          title: 'Dark Roast Coffee Beans 1kg',
+          image_url: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&q=80',
+          price: 28.0,
+          retailer: 'amazon',
+          broad_category: 'beverages',
+        },
+        intercepted_at: now - 6 * 24 * 60 * 60 * 1000,
+        decision: 'buy',
+        decided_at: now - 6 * 24 * 60 * 60 * 1000 + 40 * 60 * 1000,
+        bypass_reason: 'Ran out of coffee and it is deadline week at work',
+      },
+      {
+        id: 'demo-history-5',
+        item: {
+          title: 'Instant Ramen Variety Box 24 Pack',
+          image_url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&q=80',
+          price: 32.5,
+          retailer: 'amazon',
+          broad_category: 'food',
+        },
+        intercepted_at: now - 12 * 24 * 60 * 60 * 1000 - 26 * 60 * 60 * 1000,
+        decision: 'buy',
+        decided_at: now - 12 * 24 * 60 * 60 * 1000,
+      },
+      {
+        id: 'demo-history-6',
+        item: {
+          title: 'Scented Soy Candle Gift Set',
+          image_url: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?w=400&q=80',
+          price: 19.95,
+          retailer: 'amazon',
+          broad_category: 'home',
+        },
+        intercepted_at: now - 16 * 24 * 60 * 60 * 1000,
+        decision: 'buy',
+        decided_at: now - 16 * 24 * 60 * 60 * 1000,
+        bought_kind: 'whitelisted',
+      },
+      {
+        id: 'demo-history-7',
+        item: {
+          title: 'Gel Pens Assorted Colours 12 Pack',
+          image_url: 'https://images.unsplash.com/photo-1586952518485-11b180e92764?w=400&q=80',
+          price: 8.99,
+          retailer: 'amazon',
+          quantity: 2,
+          broad_category: 'stationery',
+        },
+        intercepted_at: now - 20 * 24 * 60 * 60 * 1000 - 25 * 60 * 60 * 1000,
+        decision: 'buy',
+        decided_at: now - 20 * 24 * 60 * 60 * 1000,
       },
     ],
     buy_pass: {},

@@ -1,5 +1,5 @@
 // Checkout interception content script.
-import { categorize } from './shared/categories';
+import { categorize, whitelistBucket } from './shared/categories';
 import type { InterceptedItem, Retailer, VaultMessage } from './shared/types';
 
 interface SiteConfig {
@@ -230,13 +230,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 function showToast(): void {
   const toast = document.createElement('div');
-  toast.textContent = 'Sent to your Vault for a mindfulness check.';
+  toast.textContent = 'Sent to impulse for a mindfulness check.';
   Object.assign(toast.style, {
     position: 'fixed',
     top: '16px',
     right: '16px',
     zIndex: '2147483647',
-    background: '#2D6A4F',
+    background: '#2456C4',
     color: '#fff',
     padding: '12px 16px',
     borderRadius: '8px',
@@ -271,8 +271,10 @@ function makeHandleCheckout(config: SiteConfig) {
       return;
     }
     const wl = liveSettings.whitelist_categories;
-    if (wl.length > 0 && items.every((i) => wl.includes(i.category ?? 'default'))) {
-      console.log('[vault] all items in whitelisted categories — allowing through');
+    if (wl.length > 0 && items.every((i) => wl.includes(whitelistBucket(i.title)))) {
+      console.log('[vault] all items in whitelisted categories — allowing through (recorded)');
+      const passthrough: VaultMessage = { type: 'PASSTHROUGH', items, reason: 'whitelisted' };
+      chrome.runtime.sendMessage(passthrough);
       return;
     }
     e.preventDefault();

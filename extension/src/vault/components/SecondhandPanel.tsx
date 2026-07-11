@@ -1,9 +1,17 @@
 import { useState } from 'react';
 import type { Listing } from '../../shared/types';
 
-interface Props {
+export interface SecondhandGroup {
+  itemTitle: string;
   listings: Listing[];
+}
+
+interface Props {
+  /** One group per line item in the order; listings pre-filtered to >=10% cheaper. */
+  groups: SecondhandGroup[];
   loading?: boolean;
+  /** Render content only (no card chrome/heading): for use inside a collapsible section. */
+  bare?: boolean;
 }
 
 function ListingRow({ listing }: { listing: Listing }) {
@@ -34,7 +42,7 @@ function ListingRow({ listing }: { listing: Listing }) {
           View on eBay →
         </a>
       </div>
-      <p className="font-bold text-forest text-right whitespace-nowrap">
+      <p className="font-semibold text-forest text-right whitespace-nowrap">
         ${listing.price.toFixed(2)}
       </p>
     </div>
@@ -54,24 +62,37 @@ function SkeletonRow() {
   );
 }
 
-export default function SecondhandPanel({ listings, loading }: Props) {
+export default function SecondhandPanel({ groups, loading, bare }: Props) {
+  const nonEmpty = groups.filter((g) => g.listings.length > 0);
   return (
-    <div className="bg-white rounded-card shadow-sm p-5">
-      <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">Same Item, Secondhand</h3>
+    <div className={bare ? '' : 'bg-white rounded-card border border-gray-200 p-5'}>
+      {!bare && (
+        <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-1">
+          Same Item, Secondhand
+        </h3>
+      )}
+      <p className="text-xs text-gray-400 mb-4">Only listings at least 10% cheaper are shown.</p>
       {loading ? (
         <div>
           <SkeletonRow />
           <SkeletonRow />
           <SkeletonRow />
         </div>
-      ) : listings.length === 0 ? (
-        <p className="text-base text-gray-500">No secondhand listings found.</p>
+      ) : nonEmpty.length === 0 ? (
+        <p className="text-base text-gray-500">
+          No secondhand listings found that beat this price.
+        </p>
       ) : (
-        <div>
-          {listings.map((l, i) => (
-            <ListingRow key={`${l.url}-${i}`} listing={l} />
-          ))}
-        </div>
+        nonEmpty.map((group) => (
+          <div key={group.itemTitle} className="mb-4 last:mb-0">
+            {groups.length > 1 && (
+              <p className="text-sm font-medium text-gray-700 truncate mt-2">{group.itemTitle}</p>
+            )}
+            {group.listings.map((l, i) => (
+              <ListingRow key={`${l.url}-${i}`} listing={l} />
+            ))}
+          </div>
+        ))
       )}
     </div>
   );

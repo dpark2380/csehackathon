@@ -4,6 +4,8 @@ import type { MatchItem } from '../../shared/types';
 interface Props {
   matches: MatchItem[];
   loading?: boolean;
+  /** Render content only (no card chrome/heading): for use inside a collapsible section. */
+  bare?: boolean;
 }
 
 function formatPurchaseDate(dateStr: string): string {
@@ -49,10 +51,12 @@ function Skeleton() {
   );
 }
 
-export default function OwnedItemsPanel({ matches, loading }: Props) {
+export default function OwnedItemsPanel({ matches, loading, bare }: Props) {
   return (
-    <div className="bg-white rounded-card shadow-sm p-5">
-      <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">You Already Own</h3>
+    <div className={bare ? '' : 'bg-white rounded-card border border-gray-200 p-5'}>
+      {!bare && (
+        <h3 className="uppercase tracking-wide text-sm text-gray-500 mb-4">You Already Own</h3>
+      )}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <Skeleton />
