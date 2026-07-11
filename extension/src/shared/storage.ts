@@ -112,6 +112,22 @@ export async function setItemBroadCategories(id: string, categories: string[]): 
   await setVault({ pending_interceptions: vault.pending_interceptions });
 }
 
+/**
+ * Drops one line item from a still-pending order (local hold record only — does not
+ * touch the retailer's real cart). No-op if it's the last remaining item.
+ */
+export async function removeItemFromInterception(id: string, itemIndex: number): Promise<void> {
+  const vault = await getVault();
+  const it = vault.pending_interceptions.find((p) => p.id === id);
+  if (!it) return;
+  const items = it.items ?? [it.item];
+  if (items.length <= 1) return;
+  items.splice(itemIndex, 1);
+  it.items = items;
+  it.item = items[0];
+  await setVault({ pending_interceptions: vault.pending_interceptions });
+}
+
 export async function addPendingInterception(i: Interception): Promise<void> {
   const vault = await getVault();
   vault.pending_interceptions.push(i);

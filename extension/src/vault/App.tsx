@@ -9,6 +9,7 @@ import {
   ensureSeeded,
   getVault,
   grantBuyPass,
+  removeItemFromInterception,
   saveSettings,
 } from '../shared/storage';
 import { WHITELIST_LABELS, bucketOfItem } from '../shared/categories';
@@ -120,13 +121,15 @@ export default function App() {
   const category =
     item?.category ?? (item?.retailer === 'shein' ? 'fast_fashion_top' : 'electronics_small');
 
+  const itemCount = selected?.items?.length ?? 1;
   const matchesQ = useQuery({
-    queryKey: ['matches', selectedId],
+    // itemCount so removing a line item (which can swap the primary item) refetches.
+    queryKey: ['matches', selectedId, itemCount],
     enabled: enabled && !!userId,
     queryFn: () => api.getMatches(userId!, item!),
   });
   const secondhandQ = useQuery({
-    queryKey: ['secondhand', selectedId],
+    queryKey: ['secondhand', selectedId, itemCount],
     enabled,
     // One search per line item (capped at 4), each with its own >=10%-cheaper price cap.
     queryFn: async () => {
@@ -142,7 +145,7 @@ export default function App() {
     },
   });
   const trueCostQ = useQuery({
-    queryKey: ['trueCost', selectedId],
+    queryKey: ['trueCost', selectedId, itemCount],
     enabled,
     queryFn: () => api.getTrueCost(item!.price, category, hourlyRate),
   });
@@ -156,6 +159,15 @@ export default function App() {
     setIdParam(null);
     setSelectedId(null);
   }, []);
+
+  const handleRemoveItem = useCallback(
+    async (itemIndex: number) => {
+      if (!selected) return;
+      await removeItemFromInterception(selected.id, itemIndex);
+      await reload();
+    },
+    [selected, reload]
+  );
 
   const handleDecide = useCallback(
     async (decision: Decision, bypassReason?: string) => {
@@ -289,6 +301,16 @@ export default function App() {
                     <span className="text-sm text-gray-500 whitespace-nowrap">
                       ×{i.quantity ?? 1} · ${i.price.toFixed(2)}
                     </span>
+                    {selected.items!.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(idx)}
+                        aria-label={`Remove ${i.title} from this order`}
+                        className="text-gray-400 hover:text-danger text-lg leading-none px-1"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
