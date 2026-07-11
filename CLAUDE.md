@@ -23,11 +23,12 @@
 Update this section as work progresses so future Claude Code sessions have context on where things stand.
 
 - [x] Backend skeleton and endpoints (all stubs raise NotImplementedError; /health works; Gradio mount syntax in app.py unverified — TODOs inline)
-- [ ] Gmail OAuth flow
-- [ ] CLIP matching pipeline
-- [ ] eBay Browse integration
+- [x] Gmail OAuth flow (web-redirect flow verified end-to-end 2026-07-11 with csehackathon0@gmail.com; user 105271286011729160573 synced 15 items with embeddings; /match verified on real data. Demo-day trap: consent screen's per-scope Gmail checkbox MUST be ticked — backend 400s with instructions if not)
+- [x] CLIP matching pipeline (/match verified end-to-end with real embeddings; warmed at startup via lifespan; seed order_history embeddings still null so /match returns [] until Gmail sync or a backfill script fills them)
+- [x] Storage (JSON per user), /log /tally /history /true-cost implemented + verified; startup seeding from seed/demo_user.json (order_history embeddings still null — filled by Gmail sync later)
+- [x] eBay mock path (/secondhand + USE_MOCK_EBAY dispatch) — listing data is placeholder, needs human curation; live ebay_service.py pending Production credentials
 - [ ] Extension shell (manifest, content script, background)
 - [ ] Vault dashboard UI
 - [ ] Landing page
-- [ ] Demo seeding script
+- [x] Demo seeding script (demo-seeding/: 15 emails inserted via Gmail API messages.insert with backdated internal dates; parsers round-trip verified; re-run `seed_gmail.py` to re-seed)
 - [ ] HF Spaces deployment

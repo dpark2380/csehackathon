@@ -7,9 +7,10 @@ from main import app as fastapi_app
 with gr.Blocks() as demo:
     gr.Markdown("# Vault Backend\nThis Space hosts the API. See /docs for endpoints.")
 
-# VERIFIED locally against gradio==6.20.0 (2026-07-11): signature is
+# VERIFIED locally against gradio==5.50.0 (2026-07-11): signature is
 # mount_gradio_app(app, blocks, path) -> FastAPI; /health, /docs and /gradio
-# all serve correctly under `uvicorn app:app`.
+# all serve correctly under `uvicorn app:app`. (Pinned to 5.x, not 6.x — see
+# requirements.txt: gradio 6 conflicts with sentence-transformers over huggingface-hub.)
 app = gr.mount_gradio_app(fastapi_app, demo, path="/gradio")
 
 # TODO(human): still unverified — whether HF's Gradio SDK runner serves this

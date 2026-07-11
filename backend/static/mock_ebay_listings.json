@@ -1,0 +1,128 @@
+{
+  "fashion": [
+    {
+      "title": "Cotton On High Waist Crop Top - Size S",
+      "price": 8.50,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295412039871",
+      "condition": "Used - Excellent",
+      "location": "Sydney, NSW"
+    },
+    {
+      "title": "H&M Wide Leg Denim Jeans - Mid Blue",
+      "price": 22.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295487213904",
+      "condition": "Used - Good",
+      "location": "Melbourne, VIC"
+    },
+    {
+      "title": "Nike Air Force 1 Sneakers - White, Women's 8",
+      "price": 55.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295390847215",
+      "condition": "Used - Good",
+      "location": "Brisbane, QLD"
+    },
+    {
+      "title": "Princess Polly Floral Mini Dress - Size 10",
+      "price": 18.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295501672330",
+      "condition": "New (Other)",
+      "location": "Perth, WA"
+    },
+    {
+      "title": "Zara Oversized Hoodie - Charcoal Grey",
+      "price": 14.50,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295466190087",
+      "condition": "Used - Excellent",
+      "location": "Adelaide, SA"
+    }
+  ],
+  "electronics": [
+    {
+      "title": "Apple AirPods 2nd Gen - Used, Case Included",
+      "price": 65.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295522384719",
+      "condition": "Used - Good",
+      "location": "Sydney, NSW"
+    },
+    {
+      "title": "Samsung 25W USB-C Fast Charger",
+      "price": 15.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295478903215",
+      "condition": "Used - Excellent",
+      "location": "Melbourne, VIC"
+    },
+    {
+      "title": "Fitbit Versa 3 Smartwatch - Black Band",
+      "price": 89.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295533671042",
+      "condition": "Refurbished",
+      "location": "Brisbane, QLD"
+    },
+    {
+      "title": "JBL Clip 4 Portable Bluetooth Speaker",
+      "price": 39.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295409981326",
+      "condition": "Used - Good",
+      "location": "Perth, WA"
+    },
+    {
+      "title": "Anker PowerLine USB-C Cable 2m",
+      "price": 15.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295445127609",
+      "condition": "New (Other)",
+      "location": "Adelaide, SA"
+    }
+  ],
+  "default": [
+    {
+      "title": "Ceramic Plant Pot with Drainage - White",
+      "price": 12.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295460239817",
+      "condition": "Used - Excellent",
+      "location": "Sydney, NSW"
+    },
+    {
+      "title": "IKEA Storage Basket - Woven, Medium",
+      "price": 9.50,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295497712548",
+      "condition": "Used - Good",
+      "location": "Melbourne, VIC"
+    },
+    {
+      "title": "Stainless Steel Water Bottle 750ml",
+      "price": 11.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295384562190",
+      "condition": "New (Other)",
+      "location": "Brisbane, QLD"
+    },
+    {
+      "title": "Set of 4 Ceramic Coffee Mugs",
+      "price": 16.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295519843276",
+      "condition": "Used - Excellent",
+      "location": "Perth, WA"
+    },
+    {
+      "title": "Scented Soy Candle Gift Set - 3 Pack",
+      "price": 20.00,
+      "image_url": "https://i.ebayimg.com/images/g/PLACEHOLDER/s-l500.jpg",
+      "url": "https://www.ebay.com.au/itm/295430671984",
+      "condition": "New (Other)",
+      "location": "Adelaide, SA"
+    }
+  ]
+}

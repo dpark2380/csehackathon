@@ -1,0 +1,69 @@
+{
+  "user_id": "demo-user",
+  "email": "csehackathon0@gmail.com",
+  "postcode": "2033",
+  "hourly_rate": 30,
+  "gmail_refresh_token": "",
+  "order_history": [
+    {
+      "id": "40fef65b-f5ea-432b-8717-2dbda217fdc1",
+      "retailer": "shein",
+      "title": "Black Ribbed Crop Top",
+      "image_url": "https://example.com/img/black-ribbed-crop-top.jpg",
+      "price": 8.99,
+      "purchase_date": "2026-01-15",
+      "embedding": null
+    },
+    {
+      "id": "b25fe468-c411-4069-bac0-503dbb36132c",
+      "retailer": "shein",
+      "title": "High-Waist Wide-Leg Jeans",
+      "image_url": "https://example.com/img/high-waist-wide-leg-jeans.jpg",
+      "price": 24.99,
+      "purchase_date": "2026-02-20",
+      "embedding": null
+    },
+    {
+      "id": "e4372eab-3699-491c-a33b-aa673a6e27ad",
+      "retailer": "amazon",
+      "title": "Wireless Earbuds with Charging Case",
+      "image_url": "https://example.com/img/wireless-earbuds.jpg",
+      "price": 39.99,
+      "purchase_date": "2026-03-10",
+      "embedding": null
+    },
+    {
+      "id": "e2617cd4-0f24-4a56-949a-1192e8f5873b",
+      "retailer": "shein",
+      "title": "White Platform Sneakers",
+      "image_url": "https://example.com/img/white-platform-sneakers.jpg",
+      "price": 32.5,
+      "purchase_date": "2026-04-05",
+      "embedding": null
+    },
+    {
+      "id": "59ff0c1b-d45a-47b5-8b43-ffb975fc8476",
+      "retailer": "amazon",
+      "title": "65W USB-C Fast Charger",
+      "image_url": "https://example.com/img/65w-usb-c-charger.jpg",
+      "price": 19.99,
+      "purchase_date": "2026-05-22",
+      "embedding": null
+    },
+    {
+      "id": "1ff8f35e-ebe4-487a-8f3b-20993ed21d36",
+      "retailer": "shein",
+      "title": "Floral Midi Dress",
+      "image_url": "https://example.com/img/floral-midi-dress.jpg",
+      "price": 21.99,
+      "purchase_date": "2026-06-30",
+      "embedding": null
+    }
+  ],
+  "interceptions": [],
+  "tally": {
+    "dollars_saved": 180.0,
+    "kg_co2_avoided": 9.0,
+    "items_released": 4
+  }
+}

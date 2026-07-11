@@ -32,3 +32,7 @@ backend/data/*.json
 
 # Logs
 *.log
+
+# Demo seeding
+demo-seeding/token.json
+demo-seeding/out/
