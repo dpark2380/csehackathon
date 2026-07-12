@@ -125,5 +125,5 @@ landing/        Marketing site (Next.js)
 
 Built in 42 hours at UNSW Hackathon 2026 by Daniel Park, Wilson Zhang, James Li & Jimmy Yang.
 
-- Demo video: *coming soon*
+- Demo video: [here!](https://www.youtube.com/watch?v=C3kEcKoygEw&t=1s)
 - Landing page: [here!](https://dpark2380.github.io/csehackathon/)
