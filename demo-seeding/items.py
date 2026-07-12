@@ -121,4 +121,58 @@ ITEMS: list[dict] = [
         "retailer": "amazon",
         "order_number": "249-6789012-6789012",
     },
+    # Additional Shein fashion (3), added 2026-07-12
+    {
+        "title": "Satin Cami Slip Dress",
+        "price": 26.50,
+        "image_url": "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=400&q=80",
+        "order_date": "2026-06-28",
+        "retailer": "shein",
+        "order_number": "GSHMUS2406285102",
+    },
+    {
+        "title": "Wide Leg Cargo Pants",
+        "price": 29.99,
+        "image_url": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&q=80",
+        "order_date": "2026-07-04",
+        "retailer": "shein",
+        "order_number": "GSHMUS2407045566",
+    },
+    {
+        "title": "Chunky Gold Hoop Earrings",
+        "price": 9.99,
+        "image_url": "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&q=80",
+        "order_date": "2026-07-09",
+        "retailer": "shein",
+        "order_number": "GSHMUS2407096210",
+    },
+    # Additional Amazon electronics (3), added 2026-07-12
+    {
+        "title": "NoiseGuard Active Noise Cancelling Headphones",
+        "price": 149.00,
+        "image_url": "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&q=80",
+        "order_date": "2026-06-25",
+        "retailer": "amazon",
+        "order_number": "249-7890123-7890123",
+    },
+    {
+        "title": "SwiftCharge 20000mAh Power Bank",
+        "price": 39.99,
+        "image_url": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=400&q=80",
+        "order_date": "2026-07-02",
+        "retailer": "amazon",
+        "order_number": "249-8901234-8901234",
+    },
+    {
+        "title": "LumaGlow Smart LED Desk Lamp",
+        "price": 32.50,
+        "image_url": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&q=80",
+        "order_date": "2026-07-08",
+        "retailer": "amazon",
+        "order_number": "249-9012345-9012345",
+    },
 ]
+
+# Items added after the initial 15-item seed (used by seed_gmail.py --new-only
+# so re-running the script doesn't re-insert — and duplicate — the original batch).
+NEW_ITEMS = ITEMS[15:]

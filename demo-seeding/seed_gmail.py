@@ -9,7 +9,7 @@ from email.utils import format_datetime
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.dirname(__file__))
-from items import ITEMS
+from items import ITEMS, NEW_ITEMS
 from templates import render_amazon, render_shein
 
 DEMO_TO = "csehackathon0@gmail.com"
@@ -74,16 +74,21 @@ def get_credentials():
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    # Original 15-item batch is already sitting in the demo inbox; re-running the
+    # full ITEMS list would duplicate those. Use this once new items are appended.
+    parser.add_argument("--new-only", action="store_true")
     args = parser.parse_args()
+
+    items = NEW_ITEMS if args.new_only else ITEMS
 
     if args.dry_run:
         os.makedirs(OUT_DIR, exist_ok=True)
-        for i, item in enumerate(ITEMS):
+        for i, item in enumerate(items):
             html = render(item)
             path = os.path.join(OUT_DIR, f"{item['retailer']}_{i}.html")
             with open(path, "w") as f:
                 f.write(html)
-        print(f"Wrote {len(ITEMS)} emails to {OUT_DIR}")
+        print(f"Wrote {len(items)} emails to {OUT_DIR}")
         return
 
     from googleapiclient.discovery import build
@@ -91,7 +96,7 @@ def main() -> None:
     creds = get_credentials()
     service = build("gmail", "v1", credentials=creds)
 
-    for item in ITEMS:
+    for item in items:
         html = render(item)
         raw = base64.urlsafe_b64encode(build_message(item, html)).decode()
         service.users().messages().insert(
@@ -101,7 +106,7 @@ def main() -> None:
         ).execute()
         print(f"Inserted {item['retailer']} {item['order_number']}")
 
-    print(f"Seeded {len(ITEMS)} emails into {DEMO_TO}")
+    print(f"Seeded {len(items)} emails into {DEMO_TO}")
 
 
 if __name__ == "__main__":

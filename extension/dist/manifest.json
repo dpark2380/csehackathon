@@ -27,7 +27,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.ts-loader-CyWoE3-z.js"
+        "assets/content.ts-loader-DEsOzwy7.js"
       ],
       "matches": [
         "https://*.shein.com/checkout*",
@@ -65,8 +65,8 @@
         "https://*.shein.com/*"
       ],
       "resources": [
-        "assets/categories-DFhcU8LM.js",
-        "assets/content.ts-C1Qug4EB.js"
+        "assets/categories-DyRNguSK.js",
+        "assets/content.ts-D-P4RUUo.js"
       ],
       "use_dynamic_url": false
     }

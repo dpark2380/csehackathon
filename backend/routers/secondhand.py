@@ -29,6 +29,7 @@ class SecondhandResponse(BaseModel):
 
 @router.post("/secondhand", response_model=SecondhandResponse)
 def find_secondhand_listings(body: SecondhandRequest) -> SecondhandResponse:
+    cap = body.item_price * 0.9 if body.item_price and body.item_price > 0 else None
     use_mock = os.getenv("USE_MOCK_EBAY", "true").lower() == "true"
     if use_mock:
         listings = mock_ebay.search(body.title)
@@ -36,8 +37,7 @@ def find_secondhand_listings(body: SecondhandRequest) -> SecondhandResponse:
         # Module singleton so the OAuth token cache survives across requests.
         from services.ebay_service import ebay_service
 
-        listings = ebay_service.search(body.title)
-    if body.item_price and body.item_price > 0:
-        cap = body.item_price * 0.9
+        listings = ebay_service.search(body.title, max_price=cap)
+    if cap is not None:
         listings = [l for l in listings if l["price"] <= cap]
     return SecondhandResponse(listings=listings)

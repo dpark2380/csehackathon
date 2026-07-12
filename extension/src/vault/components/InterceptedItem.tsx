@@ -26,7 +26,7 @@ export default function InterceptedItemCard({ item, total, itemCount }: Props) {
         />
       )}
       <div className="flex flex-col gap-2 min-w-0">
-        <span className="flex gap-1.5">
+        <span className="flex items-center gap-1.5">
           <span className="inline-block w-fit px-2 py-0.5 rounded-full bg-gray-100 text-xs capitalize text-gray-600">
             {item.retailer}
           </span>
@@ -34,7 +34,9 @@ export default function InterceptedItemCard({ item, total, itemCount }: Props) {
             {WHITELIST_LABELS[bucketOfItem(item)]}
           </span>
         </span>
-        <h2 className="text-2xl font-semibold text-gray-900 truncate">{item.title}</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 line-clamp-3 break-words" title={item.title}>
+          {item.title}
+        </h2>
         {(itemCount ?? 1) > 1 && (
           <p className="text-sm text-gray-500 -mt-1">+ {itemCount! - 1} more item{itemCount! > 2 ? 's' : ''} in this order</p>
         )}

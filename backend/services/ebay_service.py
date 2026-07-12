@@ -36,11 +36,17 @@ class EbayService:
         self._token_expires = time.time() + int(data.get("expires_in", 7200))
         return self._token
 
-    def search(self, title: str) -> list[dict]:
+    def search(self, title: str, max_price: float | None = None) -> list[dict]:
         # Prefer genuinely secondhand results; some items have no used market
         # (e.g. cheap stationery), so fall back to the spec's any-condition filter.
+        # The fallback trigger checks max_price too: a thin used market often returns
+        # 1-2 results priced near retail, which then all get filtered out by the
+        # router's >=10%-cheaper cap downstream. Falling back only on a truly empty
+        # used search (the old behaviour) meant those cases silently returned nothing
+        # even when cheaper any-condition listings existed.
         listings = self._search(title, used_only=True)
-        if not listings:
+        survives_cap = [l for l in listings if max_price is None or l["price"] <= max_price]
+        if not survives_cap:
             listings = self._search(title, used_only=False)
         return listings
 

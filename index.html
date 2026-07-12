@@ -51,6 +51,25 @@
         .github-btn:hover {
             background-color: #000;
         }
+
+        .video-embed {
+            position: relative;
+            width: 100%;
+            /* 16:9 without needing aspect-ratio support */
+            padding-bottom: 56.25%;
+            height: 0;
+            margin: 0.5rem 0 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +82,16 @@
         <a href="https://github.com/dpark2380/csehackathon" target="_blank" class="github-btn">
             View the Code on GitHub!
         </a>
+
+        <!-- Demo video: replace YOUTUBE_VIDEO_ID with the real ID (the part after watch?v=) -->
+        <div class="video-embed">
+            <iframe
+                src="https://youtu.be/C3kEcKoygEw"
+                title="impulse demo video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
 
         <div class="details">
             <h3>General Info</h3>

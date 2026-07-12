@@ -39,6 +39,7 @@ const PERIOD_LABELS: Record<Period, string> = {
 
 interface Props {
   history: Interception[];
+  onOpen?: (id: string) => void;
 }
 
 interface Row {
@@ -70,6 +71,7 @@ function computeRows(
   kinds: { kind: BuyKind; spent: number; count: number }[];
   purchases: {
     key: string;
+    interceptionId: string;
     title: string;
     qty: number;
     spent: number;
@@ -127,6 +129,7 @@ function computeRows(
     .flatMap((h) =>
       (h.items ?? [h.item]).map((item, idx) => ({
         key: `${h.id}-${idx}`,
+        interceptionId: h.id,
         title: item.title,
         qty: item.quantity ?? 1,
         spent: item.price * (item.quantity ?? 1),
@@ -154,7 +157,7 @@ function slicePath(cx: number, cy: number, rO: number, rI: number, a0: number, a
   ].join(' ');
 }
 
-export default function SpendingTracker({ history }: Props) {
+export default function SpendingTracker({ history, onOpen }: Props) {
   const [period, setPeriod] = useState<Period>('month');
   const [hovered, setHovered] = useState<string | null>(null);
   const isDark = useIsDarkTheme();
@@ -285,7 +288,15 @@ export default function SpendingTracker({ history }: Props) {
           {purchases.map((p) => (
             <div
               key={p.key}
-              className="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-b-0"
+              role={onOpen ? 'button' : undefined}
+              tabIndex={onOpen ? 0 : undefined}
+              onClick={() => onOpen?.(p.interceptionId)}
+              onKeyDown={(e) => {
+                if (onOpen && (e.key === 'Enter' || e.key === ' ')) onOpen(p.interceptionId);
+              }}
+              className={`flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-b-0 ${
+                onOpen ? 'cursor-pointer transition hover:bg-gray-50/50' : ''
+              }`}
             >
               <span
                 className="w-2.5 h-2.5 rounded-sm flex-shrink-0"

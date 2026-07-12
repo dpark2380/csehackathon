@@ -3,6 +3,7 @@ import type { Interception } from '../../shared/types';
 
 interface Props {
   history: Interception[];
+  onOpen?: (id: string) => void;
 }
 
 function formatDecidedDate(ms: number): string {
@@ -13,12 +14,22 @@ function formatDecidedDate(ms: number): string {
   });
 }
 
-function HistoryRow({ record }: { record: Interception }) {
+function HistoryRow({ record, onOpen }: { record: Interception; onOpen?: (id: string) => void }) {
   const [imgError, setImgError] = useState(false);
   const { item, decision, decided_at, estimated_savings } = record;
 
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-b-0">
+    <div
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onClick={() => onOpen?.(record.id)}
+      onKeyDown={(e) => {
+        if (onOpen && (e.key === 'Enter' || e.key === ' ')) onOpen(record.id);
+      }}
+      className={`flex items-center gap-4 py-3 border-b border-gray-100 last:border-b-0 ${
+        onOpen ? 'cursor-pointer transition hover:bg-gray-50/50' : ''
+      }`}
+    >
       {imgError ? (
         <div className="w-12 h-12 rounded-card bg-gray-200 flex-shrink-0" />
       ) : (
@@ -57,6 +68,7 @@ function HistoryRow({ record }: { record: Interception }) {
               href={item.checkout_url}
               target="_blank"
               rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="text-xs text-forest underline whitespace-nowrap"
             >
               Resume checkout →
@@ -68,7 +80,7 @@ function HistoryRow({ record }: { record: Interception }) {
   );
 }
 
-export default function HistoryFeed({ history }: Props) {
+export default function HistoryFeed({ history, onOpen }: Props) {
   const sorted = [...history].sort((a, b) => (b.decided_at ?? 0) - (a.decided_at ?? 0));
 
   return (
@@ -78,7 +90,7 @@ export default function HistoryFeed({ history }: Props) {
         {sorted.length === 0 ? (
           <p className="text-base text-gray-500 py-3">No decisions yet.</p>
         ) : (
-          sorted.map((record) => <HistoryRow key={record.id} record={record} />)
+          sorted.map((record) => <HistoryRow key={record.id} record={record} onOpen={onOpen} />)
         )}
       </div>
     </div>

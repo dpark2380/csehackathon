@@ -199,6 +199,53 @@ export function demoSeed(): VaultStorage {
         },
         intercepted_at: now - 13 * 60 * 1000,
       },
+      // Items below deliberately reuse the exact title + image_url of a demo-seeded
+      // Gmail order (see demo-seeding/items.py), so "You already own" hits at ~1.0
+      // similarity instead of depending on CLIP matching two different real photos
+      // (verified fragile: 0.58-0.84 across genuinely-same-category pairs, see
+      // CLAUDE.md eBay/CLIP notes). Each title was also verified live against
+      // /secondhand (USE_MOCK_EBAY=false) to actually return listings under the
+      // 10%-cheaper cap, so "Same item, secondhand" isn't an empty state either.
+      {
+        id: 'demo-pending-3',
+        item: {
+          title: 'High Waist Skinny Denim Jeans',
+          image_url: 'https://images.unsplash.com/photo-1475178626620-a4d074967452?w=400&q=80',
+          price: 24.5,
+          retailer: 'shein',
+        },
+        intercepted_at: now - 45 * 60 * 1000,
+      },
+      {
+        id: 'demo-pending-4',
+        item: {
+          title: 'RGB Mechanical Gaming Keyboard',
+          image_url: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=400&q=80',
+          price: 89.0,
+          retailer: 'amazon',
+        },
+        intercepted_at: now - 3 * 60 * 60 * 1000,
+      },
+      {
+        id: 'demo-pending-5',
+        item: {
+          title: 'FitPulse Smartwatch Series 5',
+          image_url: 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400&q=80',
+          price: 129.0,
+          retailer: 'amazon',
+        },
+        intercepted_at: now - 7 * 60 * 60 * 1000,
+      },
+      {
+        id: 'demo-pending-6',
+        item: {
+          title: 'Quilted Mini Shoulder Bag',
+          image_url: 'https://images.unsplash.com/photo-1523779105320-d1cd346ff52b?w=400&q=80',
+          price: 22.99,
+          retailer: 'shein',
+        },
+        intercepted_at: now - 15 * 60 * 60 * 1000,
+      },
       {
         id: 'demo-pending-2',
         item: {

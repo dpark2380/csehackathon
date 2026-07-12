@@ -29,7 +29,9 @@ function ListingRow({ listing }: { listing: Listing }) {
         />
       )}
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-gray-900">{listing.title}</p>
+        <p className="line-clamp-2 break-words font-medium text-gray-900" title={listing.title}>
+          {listing.title}
+        </p>
         <p className="text-sm text-gray-500 truncate">
           {listing.condition} · {listing.location}
         </p>

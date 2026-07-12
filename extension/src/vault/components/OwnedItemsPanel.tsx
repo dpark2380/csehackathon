@@ -33,7 +33,9 @@ function MatchCard({ match }: { match: MatchItem }) {
           {Math.round(match.similarity * 100)}% match
         </span>
       </div>
-      <p className="truncate font-medium text-gray-900">{match.title}</p>
+      <p className="line-clamp-2 break-words font-medium text-gray-900" title={match.title}>
+        {match.title}
+      </p>
       <p className="text-sm text-gray-500 truncate capitalize">
         {formatPurchaseDate(match.purchase_date)} · {match.retailer}
       </p>

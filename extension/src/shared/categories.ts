@@ -120,7 +120,7 @@ export function broadCategorize(title: string): string {
 export const WHITELIST_LABELS: Record<string, string> = {
   electronics: 'Electronics',
   clothes: 'Clothes',
-  essentials: 'Essentials (food, drinks & medicine)',
+  essentials: 'Essentials',
   toys: 'Toys',
   home: 'Home',
   office: 'Office',

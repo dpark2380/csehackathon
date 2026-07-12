@@ -23,6 +23,7 @@ import TrueCostPanel from './components/TrueCostPanel';
 import HistoryFeed from './components/HistoryFeed';
 import CountdownTimer from './components/CountdownTimer';
 import DecisionButtons from './components/DecisionButtons';
+import DecisionSummary from './components/DecisionSummary';
 import ConfettiOverlay from './components/ConfettiOverlay';
 import VaultList from './components/VaultList';
 
@@ -96,9 +97,14 @@ export default function App() {
 
   const selected =
     vault && selectedId
-      ? vault.pending_interceptions.find((p) => p.id === selectedId) ?? null
+      ? (vault.pending_interceptions.find((p) => p.id === selectedId) ??
+        vault.history.find((h) => h.id === selectedId) ??
+        null)
       : null;
   const inDetail = selected !== null;
+  // History rows carry a `decision`; pending ones don't. Governs whether the detail
+  // page shows the live countdown + decide buttons or a read-only "what happened" card.
+  const isDecided = selected?.decision !== undefined;
   const item = selected?.item;
   const userId = vault?.user_id;
   const hourlyRate = vault?.settings.hourly_rate ?? 30;
@@ -301,7 +307,7 @@ export default function App() {
                     <span className="text-sm text-gray-500 whitespace-nowrap">
                       ×{i.quantity ?? 1} · ${i.price.toFixed(2)}
                     </span>
-                    {selected.items!.length > 1 && (
+                    {!isDecided && selected.items!.length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveItem(idx)}
@@ -315,12 +321,18 @@ export default function App() {
                 ))}
               </div>
             )}
-            <CountdownTimer
-              interceptedAt={selected.intercepted_at}
-              holdMs={holdMs}
-              onExpire={() => setExpired(true)}
-            />
-            <DecisionButtons expired={expired} onDecide={handleDecide} busy={busy} />
+            {isDecided ? (
+              <DecisionSummary record={selected} />
+            ) : (
+              <>
+                <CountdownTimer
+                  interceptedAt={selected.intercepted_at}
+                  holdMs={holdMs}
+                  onExpire={() => setExpired(true)}
+                />
+                <DecisionButtons expired={expired} onDecide={handleDecide} busy={busy} />
+              </>
+            )}
               </div>
               {/* Evidence column: everything that argues against the purchase. */}
               <div className="lg:col-span-3 flex flex-col gap-6">
@@ -417,12 +429,12 @@ export default function App() {
                         </button>
                       </div>
                     )}
-                    <HistoryFeed history={vault.history} />
+                    <HistoryFeed history={vault.history} onOpen={goDetail} />
                   </div>
                 </div>
               </>
             )}
-            {tab === 'tracker' && <SpendingTracker history={vault.history} />}
+            {tab === 'tracker' && <SpendingTracker history={vault.history} onOpen={goDetail} />}
             {tab === 'settings' && (
               <SettingsPanel
                 settings={vault.settings}
